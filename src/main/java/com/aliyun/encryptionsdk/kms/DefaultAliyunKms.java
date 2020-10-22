@@ -49,7 +49,6 @@ public class DefaultAliyunKms implements AliyunKms {
         GenerateDataKeyRequest request = new GenerateDataKeyRequest();
         request.setKeyId(keyId.getRawKeyId());
         request.setKeySpec(algorithm.getKeySpec());
-        request.setNumberOfBytes(16);
         Gson gson = new Gson();
         request.setEncryptionContext(context.isEmpty() ? null : gson.toJson(context));
         GenerateDataKeyResponse response = getResult(GenerateDataKeyResponse.class, request, keyId);

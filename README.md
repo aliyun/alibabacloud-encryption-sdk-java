@@ -87,13 +87,13 @@ public class BasicEncryptionExample {
         //aliyunSDK.setCryptoKeyManager(new CachingCryptoKeyManager(new LocalDataKeyMaterialCache()));
 
         //3.创建provider，用于提供数据密钥或签名
-        DataKeyProvider provider = new DefaultDataKeyProvider(CMK_ID);
+        BaseDataKeyProvider provider = new DefaultDataKeyProvider(CMK_ID);
         //设置不同的算法（可设置，默认为AES_GCM_NOPADDING_256）
         //provider.setAlgorithm(CryptoAlgorithm.SM4_GCM_NOPADDING_128);
         //设置多CMK（可设置，默认为单CMK）
         //provider.setMultiCmkId(KEY_ID_LIST);
         //创建不同的provider
-        //DataKeyProvider provider = new SecretManagerDataKeyProvider(CMK_ID, "dataKeySecretName");
+        //BaseDataKeyProvider provider = new SecretManagerDataKeyProvider(CMK_ID, "dataKeySecretName");
 
         //4.加密上下文
         Map<String, String> encryptionContext = new HashMap<>();

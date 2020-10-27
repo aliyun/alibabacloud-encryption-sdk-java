@@ -57,7 +57,7 @@ $ mvn package -DskipTests
 <dependency>
   <groupId>com.aliyun</groupId>
   <artifactId>alibabacloud-encryption-sdk-java</artifactId>
-  <version>1.0.1</version>
+  <version>1.0.2</version>
 </dependency>
 ```
 
@@ -107,4 +107,4 @@ public class BasicEncryptionExample {
         Assert.assertArrayEquals(PLAIN_TEXT, plainResult.getResult());
     }
 }
-```
+```2

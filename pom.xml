@@ -6,27 +6,32 @@
     <groupId>com.aliyun</groupId>
     <artifactId>alibabacloud-encryption-sdk-java</artifactId>
     <packaging>jar</packaging>
-    <version>1.0.1</version>
-    <name>alibabacloud-encryption-sdk</name>
+    <version>1.0.2</version>
+    <name>alibabacloud-encryption-sdk-java</name>
     <url>http://www.aliyun.com</url>
     <description>Alibabacloud Encryption SDK for Java
         Copyright (C) Alibaba Cloud Computing
         All rights reserved.
         版权所有 （C）阿里云计算有限公司
-        http://www.aliyun.com</description>
+            http://www.aliyun.com
+    </description>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
+    <distributionManagement>
+        <snapshotRepository>
+            <id>sonatype-nexus-snapshots</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+        <repository>
+            <id>sonatype-nexus-staging</id>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+    </distributionManagement>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+    </properties>
     <dependencies>
         <dependency>
             <groupId>org.bouncycastle</groupId>
@@ -68,12 +73,6 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.13.1</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <version>RELEASE</version>
             <scope>test</scope>
         </dependency>
         <dependency>

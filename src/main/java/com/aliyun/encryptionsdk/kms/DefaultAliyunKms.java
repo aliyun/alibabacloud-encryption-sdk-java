@@ -71,10 +71,12 @@ public class DefaultAliyunKms implements AliyunKms {
     }
 
     @Override
-    public EncryptedDataKey encryptDataKey(CmkId keyId, String plaintext) {
+    public EncryptedDataKey encryptDataKey(CmkId keyId, String plaintext, Map<String, String> context) {
         EncryptRequest request = new EncryptRequest();
         request.setKeyId(keyId.getRawKeyId());
         request.setPlaintext(plaintext);
+        Gson gson = new Gson();
+        request.setEncryptionContext(context.isEmpty() ? null : gson.toJson(context));
         EncryptResponse response = getResult(EncryptResponse.class, request, keyId);
         return new EncryptedDataKey(keyId.getKeyId(), response.getCiphertextBlob());
     }

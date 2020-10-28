@@ -38,7 +38,7 @@ public class EncryptedDataKeyTest {
         AliyunKms.GenerateDataKeyResult generateDataKeyResult =
                 aliyunKms.generateDataKey(new CmkId(KEY_ID), algorithm, Collections.singletonMap("test", "generate"));
         String plaintext = generateDataKeyResult.getPlaintext();
-        EncryptedDataKey encryptedDataKey = aliyunKms.encryptDataKey(new CmkId(KEY_ID), plaintext);
+        EncryptedDataKey encryptedDataKey = aliyunKms.encryptDataKey(new CmkId(KEY_ID), plaintext, Collections.singletonMap("test", "generate"));
         AliyunKms.DecryptDataKeyResult decryptDataKeyResult = aliyunKms.decryptDataKey(encryptedDataKey, Collections.emptyMap());
         assertEquals(plaintext, decryptDataKeyResult.getPlaintext());
     }

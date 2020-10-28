@@ -70,7 +70,7 @@ public class DefaultAliyunKmsTest {
         algorithm = CryptoAlgorithm.AES_GCM_NOPADDING_256;
         AliyunKms.GenerateDataKeyResult generateDataKeyResult = aliyunKms.generateDataKey(cmkId, algorithm, encryptionContext);
         String plaintext = generateDataKeyResult.getPlaintext();
-        EncryptedDataKey encryptedDataKey = aliyunKms.encryptDataKey(cmkId, plaintext);
+        EncryptedDataKey encryptedDataKey = aliyunKms.encryptDataKey(cmkId, plaintext, encryptionContext);
         AliyunKms.DecryptDataKeyResult decryptDataKeyResult = aliyunKms.decryptDataKey(encryptedDataKey, Collections.EMPTY_MAP);
         assertEquals(plaintext, decryptDataKeyResult.getPlaintext());
     }

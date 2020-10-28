@@ -47,9 +47,10 @@ public interface AliyunKms {
      * 加密一个数据密文明文
      * @param keyId keyId
      * @param plaintext 数据密钥明文（Base64编码）
+     * @param context dataKey密钥上下文信息
      * @return 数据密钥密文
      */
-    EncryptedDataKey encryptDataKey(CmkId keyId, String plaintext);
+    EncryptedDataKey encryptDataKey(CmkId keyId, String plaintext, Map<String, String> context);
 
     /**
      * 转加密一个数据密钥密文

@@ -6,7 +6,7 @@
     <groupId>com.aliyun</groupId>
     <artifactId>alibabacloud-encryption-sdk-java</artifactId>
     <packaging>jar</packaging>
-    <version>1.0.2</version>
+    <version>1.0.3</version>
     <name>alibabacloud-encryption-sdk-java</name>
     <url>http://www.aliyun.com</url>
     <description>Alibabacloud Encryption SDK for Java

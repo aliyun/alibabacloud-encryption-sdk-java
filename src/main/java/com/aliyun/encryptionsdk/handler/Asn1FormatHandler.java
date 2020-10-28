@@ -17,7 +17,7 @@ package com.aliyun.encryptionsdk.handler;
 import com.aliyun.encryptionsdk.exception.CipherTextParseException;
 import com.aliyun.encryptionsdk.model.*;
 import org.bouncycastle.asn1.*;
-
+import org.bouncycastle.util.encoders.Base64;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -232,7 +232,7 @@ public class Asn1FormatHandler implements FormatHandler {
         encryptedDataKeys.forEach(dataKey -> {
             ASN1EncodableVector vector = new ASN1EncodableVector();
             vector.add(new DEROctetString(dataKey.getKeyId()));
-            vector.add(new DEROctetString(dataKey.getDataKey()));
+            vector.add(new DEROctetString(Base64.decode(dataKey.getDataKey())));
             dataKeyVec.add(new DERSequence(vector));
         });
         return new DERSet(dataKeyVec);
@@ -244,7 +244,7 @@ public class Asn1FormatHandler implements FormatHandler {
             DLSequence sequence = (DLSequence) aSet;
             ASN1OctetString key = (DEROctetString) sequence.getObjectAt(0);
             ASN1OctetString dataKey = (DEROctetString) sequence.getObjectAt(1);
-            list.add(new EncryptedDataKey(key.getOctets(), dataKey.getOctets()));
+            list.add(new EncryptedDataKey(key.getOctets(), Base64.encode(dataKey.getOctets())));
         }
         return list;
     }

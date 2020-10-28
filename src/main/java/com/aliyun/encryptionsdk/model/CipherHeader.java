@@ -17,6 +17,7 @@ package com.aliyun.encryptionsdk.model;
 import com.aliyun.encryptionsdk.exception.AliyunException;
 import com.aliyun.encryptionsdk.handler.AlgorithmHandler;
 
+import java.security.SecureRandom;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -86,6 +87,8 @@ public class CipherHeader {
     public void calculateHeaderAuthTag(AlgorithmHandler handler) {
         byte[] headerFieldsBytes = serializeAuthenticatedFields();
         byte[] headerIv = new byte[algorithm.getIvLen()];
+        SecureRandom random = new SecureRandom();
+        random.nextBytes(headerIv);
         byte[] headerAuthTag = handler.cipherData(headerIv, headerFieldsBytes, new byte[0], 0, 0);
         this.headerIv = headerIv;
         this.headerAuthTag = headerAuthTag;

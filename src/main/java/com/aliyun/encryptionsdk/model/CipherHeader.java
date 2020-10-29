@@ -89,7 +89,7 @@ public class CipherHeader {
         byte[] headerIv = new byte[algorithm.getIvLen()];
         SecureRandom random = new SecureRandom();
         random.nextBytes(headerIv);
-        byte[] headerAuthTag = handler.cipherData(headerIv, headerFieldsBytes, new byte[0], 0, 0);
+        byte[] headerAuthTag = handler.headerGcmEncrypt(headerIv, headerFieldsBytes, new byte[0], 0, 0);
         this.headerIv = headerIv;
         this.headerAuthTag = headerAuthTag;
     }

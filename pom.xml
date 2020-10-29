@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -8,14 +8,26 @@
     <packaging>jar</packaging>
     <version>1.0.4</version>
     <name>alibabacloud-encryption-sdk-java</name>
-    <url>http://www.aliyun.com</url>
     <description>Alibabacloud Encryption SDK for Java
         Copyright (C) Alibaba Cloud Computing
         All rights reserved.
         版权所有 （C）阿里云计算有限公司
             http://www.aliyun.com
     </description>
-
+    <url>https://github.com/aliyun/alibabacloud-encryption-sdk-java</url>
+    <licenses>
+        <license>
+            <name>The Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
+    <developers>
+        <developer>
+            <id>aliyun KMS</id>
+            <name>Aliyun KMS Encryption SDK</name>
+            <email>changjun.zl@alibaba-inc.com</email>
+        </developer>
+    </developers>
     <distributionManagement>
         <snapshotRepository>
             <id>sonatype-nexus-snapshots</id>
@@ -26,6 +38,11 @@
             <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
         </repository>
     </distributionManagement>
+    <scm>
+        <connection/>
+        <developerConnection/>
+        <url/>
+    /scm>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

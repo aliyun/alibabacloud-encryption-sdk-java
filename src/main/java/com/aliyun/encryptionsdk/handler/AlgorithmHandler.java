@@ -19,6 +19,7 @@ import com.aliyun.encryptionsdk.exception.SecurityProcessException;
 import com.aliyun.encryptionsdk.logger.CommonLogger;
 import com.aliyun.encryptionsdk.model.Constants;
 import com.aliyun.encryptionsdk.model.CryptoAlgorithm;
+import com.aliyun.encryptionsdk.model.CipherHeader;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import javax.crypto.Cipher;
@@ -85,7 +86,7 @@ public class AlgorithmHandler {
                 gcmCipher = Cipher.getInstance("SM4/GCM/NoPadding", BouncyCastleProvider.PROVIDER_NAME);
             else
                 gcmCipher = Cipher.getInstance("AES/GCM/NoPadding", BouncyCastleProvider.PROVIDER_NAME);
-            if (iv.length != algorithm.getIvLen()) {
+            if (iv.length != CipherHeader.HEADER_IV_LEN) {
                 throw new IllegalArgumentException("Invalid iv length: " + iv.length);
             }
             AlgorithmParameterSpec spec = new GCMParameterSpec(algorithm.getBlockSize() * 8, iv);

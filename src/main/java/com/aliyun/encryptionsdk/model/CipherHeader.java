@@ -35,6 +35,8 @@ public class CipherHeader {
     private byte[] headerIv;
     private byte[] headerAuthTag;
 
+    public static int HEADER_IV_LEN = 12;
+
     public CipherHeader(List<EncryptedDataKey> encryptedDataKeys, Map<String, String> encryptionContext, CryptoAlgorithm algorithm) {
         this.encryptedDataKeys = encryptedDataKeys;
         this.encryptionContext = encryptionContext;
@@ -86,7 +88,7 @@ public class CipherHeader {
 
     public void calculateHeaderAuthTag(AlgorithmHandler handler) {
         byte[] headerFieldsBytes = serializeAuthenticatedFields();
-        byte[] headerIv = new byte[algorithm.getIvLen()];
+        byte[] headerIv = new byte[HEADER_IV_LEN];
         SecureRandom random = new SecureRandom();
         random.nextBytes(headerIv);
         byte[] headerAuthTag = handler.headerGcmEncrypt(headerIv, headerFieldsBytes, new byte[0], 0, 0);

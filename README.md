@@ -57,7 +57,7 @@ $ mvn package -DskipTests
 <dependency>
   <groupId>com.aliyun</groupId>
   <artifactId>alibabacloud-encryption-sdk-java</artifactId>
-  <version>1.0.5</version>
+  <version>1.0.6</version>
 </dependency>
 ```
 

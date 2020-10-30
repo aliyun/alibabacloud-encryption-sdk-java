@@ -14,10 +14,12 @@
 
 package com.aliyun.encryptionsdk.handler;
 
+import com.aliyun.encryptionsdk.exception.CipherTextParseException;
 import com.aliyun.encryptionsdk.model.*;
 
 import javax.crypto.Cipher;
 import java.security.SecureRandom;
+import java.util.Arrays;
 
 /**
  * {@link EncryptHandler} 的默认实现
@@ -61,7 +63,10 @@ public class DefaultEncryptHandler implements EncryptHandler {
     @Override
     public byte[] decrypt(CipherMaterial cipherMaterial, DecryptionMaterial decryptionMaterial) {
         AlgorithmHandler handler = new AlgorithmHandler(decryptionMaterial.getAlgorithm(), decryptionMaterial.getPlaintextDataKey(), Cipher.DECRYPT_MODE);
-        verifyHeaderAuthTag(cipherMaterial.getCipherHeader(), handler);
+        if(!verifyHeaderAuthTag(cipherMaterial.getCipherHeader(), handler)){
+            throw new CipherTextParseException("header authTag verify failed");
+        }
+
 
         CipherBody cipherBody = cipherMaterial.getCipherBody();
         byte[] cipherText = cipherBody.getCipherText();
@@ -77,8 +82,19 @@ public class DefaultEncryptHandler implements EncryptHandler {
                 result, 0, result.length);
     }
 
-    private void verifyHeaderAuthTag(CipherHeader cipherHeader, AlgorithmHandler handler) {
-        byte[] headerAuthTag = cipherHeader.getHeaderAuthTag();
-        handler.cipherData(cipherHeader.getHeaderIv(), cipherHeader.serializeAuthenticatedFields(), headerAuthTag, 0, headerAuthTag.length);
+    private boolean verifyHeaderAuthTag(CipherHeader cipherHeader, AlgorithmHandler handler) {
+        try {
+            byte[] headerAuthTag = cipherHeader.getHeaderAuthTag();
+
+            byte[] headerAuthTagCalc = handler.headerGcmEncrypt(cipherHeader.getHeaderIv(), cipherHeader.serializeAuthenticatedFields(), new byte[0], 0, 0);
+            if(headerAuthTagCalc==null)
+                return false;
+            if (Arrays.equals(headerAuthTag, headerAuthTagCalc))
+                return true;
+            else
+                return false;
+        }catch(Exception e){
+            return false;
+        }
     }
 }

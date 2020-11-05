@@ -19,7 +19,7 @@ import com.aliyun.encryptionsdk.AliyunConfig;
 import com.aliyun.encryptionsdk.exception.InvalidAlgorithmException;
 import com.aliyun.encryptionsdk.exception.UnFoundDataKeyException;
 import com.aliyun.encryptionsdk.model.CryptoResult;
-import com.aliyun.encryptionsdk.provider.dataKey.DefaultDataKeyProvider;
+import com.aliyun.encryptionsdk.provider.dataKey.SecretManagerDataKeyProvider;
 
 import javax.persistence.AttributeConverter;
 import javax.persistence.Converter;
@@ -31,7 +31,7 @@ import java.util.Collections;
 public class EncryptionConverter implements AttributeConverter<String, String> {
     private static String ACCESS_KEY_ID = "<AccessKeyId>";
     private static String ACCESS_KEY_SECRET = "<AccessKeySecret>";
-    private static String CMK_ID = "acs:kms:RegionId:UserId:key/CmkId";
+    private static String CMK_ARN = "acs:kms:RegionId:UserId:key/CmkId";
     private static AliyunConfig config;
     static {
         config = new AliyunConfig();
@@ -40,10 +40,10 @@ public class EncryptionConverter implements AttributeConverter<String, String> {
 
     @Override
     public String convertToDatabaseColumn(String plainText) {
-        DefaultDataKeyProvider defaultDataKeyProvider = new DefaultDataKeyProvider(CMK_ID);
+        SecretManagerDataKeyProvider secretManagerDataKeyProvider = new SecretManagerDataKeyProvider(CMK_ARN, "tableDataKeySecretName");
         AliyunCrypto crypto = new AliyunCrypto(config);
         try {
-            CryptoResult<byte[]> encryptResult = crypto.encrypt(defaultDataKeyProvider, plainText.getBytes(StandardCharsets.UTF_8), Collections.singletonMap("sample", "context"));
+            CryptoResult<byte[]> encryptResult = crypto.encrypt(secretManagerDataKeyProvider, plainText.getBytes(StandardCharsets.UTF_8), Collections.singletonMap("sample", "context"));
             return Base64.getEncoder().encodeToString(encryptResult.getResult());
         } catch (InvalidAlgorithmException e) {
             System.out.println("Failed.");
@@ -54,10 +54,10 @@ public class EncryptionConverter implements AttributeConverter<String, String> {
 
     @Override
     public String convertToEntityAttribute(String cipherText) {
-        DefaultDataKeyProvider defaultDataKeyProvider = new DefaultDataKeyProvider(CMK_ID);
+        SecretManagerDataKeyProvider secretManagerDataKeyProvider = new SecretManagerDataKeyProvider(CMK_ARN, "convertSecretName");
         AliyunCrypto crypto = new AliyunCrypto(config);
         try {
-            CryptoResult<byte[]> decryptResult = crypto.decrypt(defaultDataKeyProvider, Base64.getDecoder().decode(cipherText));
+            CryptoResult<byte[]> decryptResult = crypto.decrypt(secretManagerDataKeyProvider, Base64.getDecoder().decode(cipherText));
             return new String(decryptResult.getResult(), StandardCharsets.UTF_8);
         } catch (InvalidAlgorithmException | UnFoundDataKeyException e) {
             e.printStackTrace();

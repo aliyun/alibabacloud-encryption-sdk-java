@@ -19,10 +19,12 @@ import com.aliyun.encryptionsdk.exception.SecurityProcessException;
 import com.aliyun.encryptionsdk.logger.CommonLogger;
 import com.aliyun.encryptionsdk.model.Constants;
 import com.aliyun.encryptionsdk.model.CryptoAlgorithm;
+import com.aliyun.encryptionsdk.model.CipherHeader;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
+import javax.crypto.spec.GCMParameterSpec;
 import java.security.Security;
 import java.security.spec.AlgorithmParameterSpec;
 
@@ -76,4 +78,28 @@ public class AlgorithmHandler {
             throw new SecurityProcessException("Failed to obtain " + algorithm.getCryptoName() + " cipher result", e);
         }
     }
+
+    public byte[] headerGcmEncrypt(byte[] iv, byte[] contentAad, final byte[] content, int off, int len) {
+        try {
+            Cipher gcmCipher;
+            if(algorithm.getKeyName().equals("SM4"))
+                gcmCipher = Cipher.getInstance("SM4/GCM/NoPadding", BouncyCastleProvider.PROVIDER_NAME);
+            else
+                gcmCipher = Cipher.getInstance("AES/GCM/NoPadding", BouncyCastleProvider.PROVIDER_NAME);
+            if (iv.length != CipherHeader.HEADER_IV_LEN) {
+                throw new IllegalArgumentException("Invalid iv length: " + iv.length);
+            }
+            AlgorithmParameterSpec spec = new GCMParameterSpec(algorithm.getBlockSize() * 8, iv);
+
+            gcmCipher.init(Cipher.ENCRYPT_MODE, keySpec, spec);
+            if (contentAad != null) {
+                gcmCipher.updateAAD(contentAad);
+            }
+            return gcmCipher.doFinal(content, off, len);
+        } catch (Exception e) {
+            CommonLogger.getCommonLogger(Constants.MODE_NAME).errorf("Failed to obtain " + algorithm.getCryptoName() + " cipher result" ,e);
+            throw new SecurityProcessException("Failed to obtain " + algorithm.getCryptoName() + " cipher result", e);
+        }
+    }
+
 }

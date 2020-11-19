@@ -25,7 +25,7 @@
         <developer>
             <id>aliyun KMS</id>
             <name>Aliyun KMS Encryption SDK</name>
-            <email>changjun.zl@alibaba-inc.com</email>
+            <email>aliyunsdk@aliyun.com</email>
         </developer>
     </developers>
     <distributionManagement>

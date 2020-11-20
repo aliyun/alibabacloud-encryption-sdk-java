@@ -19,8 +19,12 @@ import com.aliyun.encryptionsdk.handler.AlgorithmHandler;
 import com.aliyun.encryptionsdk.logger.CommonLogger;
 import com.aliyun.encryptionsdk.model.*;
 import com.aliyun.encryptionsdk.provider.BaseDataKeyProvider;
+import com.aliyun.encryptionsdk.stream.CopyStreamUtil;
 
 import javax.crypto.Cipher;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.List;
 
 /**
@@ -63,8 +67,37 @@ public abstract class AbstractExternalStoreDataKeyProvider extends BaseDataKeyPr
     }
 
     @Override
+    public CipherMaterial getCipherMaterial(InputStream inputStream) {
+        CipherHeader cipherHeader;
+        try {
+            cipherHeader = getCipherHeader(dataKeyName);
+            if (cipherHeader == null) {
+                throw new AliyunException("cipherHeader not obtained");
+            }
+        } catch (Exception e) {
+            CommonLogger.getCommonLogger(Constants.MODE_NAME).errorf("Can't get dataKey from external", e);
+            throw new AliyunException("Can't get dataKey from external", e);
+        }
+        CipherBody cipherBody;
+        try {
+            byte[] ivLen = new byte[4];
+            inputStream.read(ivLen);
+            byte[] iv = new byte[CopyStreamUtil.bytesToInt(ivLen)];
+            inputStream.read(iv);
+            cipherBody = new CipherBody(iv, null);
+        } catch (IOException e) {
+            throw new AliyunException("Failed to get iv from InputStream", e);
+        }
+        return new CipherMaterial(cipherHeader, cipherBody);
+    }
+
+    @Override
     public byte[] processCipherMaterial(CipherMaterial cipherMaterial) {
         return handler.serializeCipherBody(cipherMaterial.getCipherBody());
+    }
+    @Override
+    public void writeCipherHeader(CipherHeader cipherHeader, OutputStream outputStream) {
+        //外部存储不需要将头部信息存入流中
     }
 
     EncryptionMaterial getEncryptionMaterial(CipherHeader cipherHeader, EncryptionMaterial material) {

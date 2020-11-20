@@ -53,16 +53,16 @@ public class DigestMessageSignatureVerifySample {
         AliyunCrypto aliyunCrypto = new AliyunCrypto(config);
         // 3、构建签名验签dataKeyProvider
         KmsAsymmetricKeyProvider provider = new KmsAsymmetricKeyProvider(KEY_ID, KEY_VERSION_ID, SignatureAlgorithm.RSA_PKCS1_SHA_256);
-        //    算法为sm2时 需要kms获取公钥
-//        KmsAsymmetricKeyProvider provider = new KmsAsymmetricKeyProvider(KEY_ID, KEY_VERSION_ID, SignatureAlgorithm.SM2DSA);
-//        provider.setAliyunKms(new DefaultAliyunKms(config));
+        // 算法为sm2时 需要kms获取公钥
+        // KmsAsymmetricKeyProvider provider = new KmsAsymmetricKeyProvider(KEY_ID, KEY_VERSION_ID, SignatureAlgorithm.SM2DSA);
+        // provider.setAliyunKms(new DefaultAliyunKms(config));
         // 4、计算摘要
         byte[] digest = provider.getDigest(plainText);
         byte[] sha256Digest = getDigestBytes(digest);
         // 5、sdk验签并返回结果
         try {
-            SignatureResult<Boolean> verifyResult = aliyunCrypto.verify(provider, sha256Digest, result, ContentType.DIGEST);
-            return verifyResult.getResult();
+            Boolean verifyResult = aliyunCrypto.verify(provider, sha256Digest, result, ContentType.DIGEST);
+            return verifyResult;
         } catch (InvalidAlgorithmException e) {
             System.out.println("Failed.");
             System.out.println("Error message: " + e.getMessage());
@@ -79,8 +79,8 @@ public class DigestMessageSignatureVerifySample {
         // 3、构建签名验签dataKeyProvider(keyId支持sm2 使用sm2时provider中需要指定算法)
         KmsAsymmetricKeyProvider provider = new KmsAsymmetricKeyProvider(KEY_ID, KEY_VERSION_ID, SignatureAlgorithm.RSA_PKCS1_SHA_256);
         //    算法为sm2时 需要kms获取公钥
-//        KmsAsymmetricKeyProvider provider = new KmsAsymmetricKeyProvider(KEY_ID, KEY_VERSION_ID, SignatureAlgorithm.SM2DSA);
-//        provider.setAliyunKms(new DefaultAliyunKms(config));
+        //KmsAsymmetricKeyProvider provider = new KmsAsymmetricKeyProvider(KEY_ID, KEY_VERSION_ID, SignatureAlgorithm.SM2DSA);
+        //provider.setAliyunKms(new DefaultAliyunKms(config));
 
         // 4、计算摘要
         byte[] digest = provider.getDigest(plainText);

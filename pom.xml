@@ -6,7 +6,7 @@
     <groupId>com.aliyun</groupId>
     <artifactId>alibabacloud-encryption-sdk-java</artifactId>
     <packaging>jar</packaging>
-    <version>1.0.6</version>
+    <version>1.0.7</version>
     <name>alibabacloud-encryption-sdk-java</name>
     <description>Alibabacloud Encryption SDK for Java
         Copyright (C) Alibaba Cloud Computing
@@ -25,7 +25,6 @@
         <developer>
             <id>aliyun KMS</id>
             <name>Aliyun KMS Encryption SDK</name>
-            <email>aliyunsdk@aliyun.com</email>
         </developer>
     </developers>
     <distributionManagement>
@@ -52,7 +51,7 @@
     <dependencies>
         <dependency>
             <groupId>org.bouncycastle</groupId>
-            <artifactId>bcpkix-jdk15on</artifactId>
+            <artifactId>bcprov-jdk15on</artifactId>
             <version>1.64</version>
         </dependency>
         <dependency>
@@ -66,8 +65,18 @@
             <artifactId>aliyun-java-sdk-kms</artifactId>
             <version>2.11.0</version>
         </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.21</version>
+        </dependency>
 
         <!-- dependency for test and example -->
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcpkix-jdk15on</artifactId>
+            <version>1.64</version>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
@@ -186,5 +195,14 @@
         <version>2.22.1</version>
       </plugin>
     </plugins>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>true</filtering>
+        <includes>
+          <include>encsdk.properties</include>
+        </includes>
+      </resource>
+    </resources>
   </build>
 </project>

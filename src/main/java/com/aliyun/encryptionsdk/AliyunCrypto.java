@@ -26,7 +26,10 @@ import com.aliyun.encryptionsdk.provider.SignatureProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.Map;
 
 /**
@@ -87,6 +90,13 @@ public class AliyunCrypto {
     }
 
     /**
+     * 使用 {@link BaseDataKeyProvider} 生成dataKey加密 {@code plaintext}
+     */
+    public CryptoResult<byte[]> encrypt(BaseDataKeyProvider provider, byte[] plainText) {
+        return encrypt(provider, plainText, Collections.emptyMap());
+    }
+
+    /**
      * 使用 {@link BaseDataKeyProvider} 获取加密使用的dataKey解密 {@code cipherText}
      * @param provider 数据密钥提供
      * @param cipherText 密文
@@ -100,6 +110,46 @@ public class AliyunCrypto {
         DecryptionMaterial material = cryptoKeyManager.getDecryptDataKeyMaterial(provider,
                 cipherHeader.getEncryptionContext(), cipherHeader.getEncryptedDataKeys());
         return new CryptoResult<>(encryptHandler.decrypt(cipherMaterial, material), cipherMaterial);
+    }
+
+    /**
+     * 读取 {@link InputStream} 内的字节数据，使用 {@link BaseDataKeyProvider} 加密后写入 {@link OutputStream}
+     * @param provider 数据密钥提供
+     * @param inputStream 待加密明文流
+     * @param outputStream 已加密密文流
+     * @param encryptionContext 加密上下文
+     * @return 加密结果
+     */
+    public CryptoResult<OutputStream> encrypt(BaseDataKeyProvider provider, InputStream inputStream, OutputStream outputStream, Map<String, String> encryptionContext) {
+        provider.setAliyunKms(new DefaultAliyunKms(config));
+        EncryptionMaterial material = cryptoKeyManager.getEncryptDataKeyMaterial(provider, encryptionContext, -1);
+        CipherMaterial cipherMaterial = encryptHandler.encryptStream(inputStream, outputStream, provider, material);
+        return new CryptoResult<>(outputStream, cipherMaterial);
+    }
+
+    /**
+     * 读取 {@link InputStream} 内的字节数据，使用 {@link BaseDataKeyProvider} 加密后写入 {@link OutputStream}
+     */
+    public CryptoResult<OutputStream> encrypt(BaseDataKeyProvider provider, InputStream inputStream, OutputStream outputStream) {
+        return encrypt(provider, inputStream, outputStream, Collections.emptyMap());
+    }
+
+    /**
+     * 读取 {@link InputStream} 内的字节数据，使用 {@link BaseDataKeyProvider} 解密后写入 {@link OutputStream}
+     * @param provider 数据密钥提供
+     * @param inputStream 加密密文流
+     * @param outputStream 明文数据流
+     * @return 解密结果
+     */
+    public CryptoResult<OutputStream> decrypt(BaseDataKeyProvider provider, InputStream inputStream, OutputStream outputStream) {
+        provider.setAliyunKms(new DefaultAliyunKms(config));
+        CipherMaterial cipherMaterial = provider.getCipherMaterial(inputStream);
+        CipherHeader cipherHeader = cipherMaterial.getCipherHeader();
+        provider.setAlgorithm(cipherHeader.getAlgorithm());
+        DecryptionMaterial material = cryptoKeyManager.getDecryptDataKeyMaterial(provider,
+                cipherHeader.getEncryptionContext(), cipherHeader.getEncryptedDataKeys());
+        encryptHandler.decryptStream(inputStream, outputStream, cipherMaterial, material);
+        return new CryptoResult<>(outputStream, cipherMaterial);
     }
 
     /**
@@ -126,12 +176,12 @@ public class AliyunCrypto {
      * @param type 内容类型
      * @return 验签结果
      */
-    public SignatureResult<Boolean> verify(SignatureProvider provider, byte[] content, byte[] signature, ContentType type) {
+    public Boolean verify(SignatureProvider provider, byte[] content, byte[] signature, ContentType type) {
         if (provider == null) {
             throw new NullPointerException("signature provider must not be null");
         }
         provider.setAliyunKms(new DefaultAliyunKms(config));
         VerifyMaterial verifyMaterial = cryptoKeyManager.getVerifyMaterial(provider, content, signature, type);
-        return new SignatureResult<>(verifyMaterial.getValue());
+        return verifyMaterial.getValue();
     }
 }

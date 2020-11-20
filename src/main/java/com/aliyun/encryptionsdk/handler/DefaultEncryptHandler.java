@@ -14,10 +14,17 @@
 
 package com.aliyun.encryptionsdk.handler;
 
+import com.aliyun.encryptionsdk.exception.AliyunException;
 import com.aliyun.encryptionsdk.exception.CipherTextParseException;
 import com.aliyun.encryptionsdk.model.*;
+import com.aliyun.encryptionsdk.provider.BaseDataKeyProvider;
+import com.aliyun.encryptionsdk.stream.CopyStreamUtil;
+import com.aliyun.encryptionsdk.stream.CryptoInputStream;
 
 import javax.crypto.Cipher;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.security.SecureRandom;
 import java.util.Arrays;
 
@@ -28,8 +35,10 @@ public class DefaultEncryptHandler implements EncryptHandler {
 
     @Override
     public CipherMaterial encrypt(byte[] plaintext, EncryptionMaterial encryptionMaterial) {
-        AlgorithmHandler handler = new AlgorithmHandler(encryptionMaterial.getAlgorithm(), encryptionMaterial.getPlaintextDataKey(), Cipher.ENCRYPT_MODE);
-        CipherHeader cipherHeader = new CipherHeader(encryptionMaterial.getEncryptedDataKeys(),
+        AlgorithmHandler handler = new AlgorithmHandler(encryptionMaterial.getAlgorithm(),
+                encryptionMaterial.getPlaintextDataKey(), Cipher.ENCRYPT_MODE);
+        CipherHeader cipherHeader = new CipherHeader(encryptionMaterial.getVersion(),
+                encryptionMaterial.getEncryptedDataKeys(),
                 encryptionMaterial.getEncryptionContext(), encryptionMaterial.getAlgorithm());
         cipherHeader.calculateHeaderAuthTag(handler);
 
@@ -82,6 +91,43 @@ public class DefaultEncryptHandler implements EncryptHandler {
                 result, 0, result.length);
     }
 
+    @Override
+    public CipherMaterial encryptStream(InputStream inputStream, OutputStream outputStream, BaseDataKeyProvider provider, EncryptionMaterial encryptionMaterial) {
+        AlgorithmHandler handler = new AlgorithmHandler(encryptionMaterial.getAlgorithm(), encryptionMaterial.getPlaintextDataKey(), Cipher.ENCRYPT_MODE);
+        CipherHeader cipherHeader = new CipherHeader(encryptionMaterial.getVersion(), encryptionMaterial.getEncryptedDataKeys(),
+                encryptionMaterial.getEncryptionContext(), encryptionMaterial.getAlgorithm());
+        cipherHeader.calculateHeaderAuthTag(handler);
+        provider.writeCipherHeader(cipherHeader, outputStream);
+
+        byte[] iv = randomIv(encryptionMaterial.getAlgorithm().getIvLen());
+        writeIv(outputStream, iv);
+        handler.cipherInit(iv);
+        if (cipherHeader.getAlgorithm().isWithAad()) {
+            handler.updateAAD(cipherHeader.getEncryptionContextBytes());
+        }
+        CryptoInputStream is = new CryptoInputStream(inputStream, handler, 4096);
+        CopyStreamUtil.copyIsToOs(is, outputStream);
+
+        CipherBody cipherBody = new CipherBody(iv, null);
+        return new CipherMaterial(cipherHeader, cipherBody);
+    }
+
+    @Override
+    public void decryptStream(InputStream inputStream, OutputStream outputStream, CipherMaterial cipherMaterial, DecryptionMaterial decryptionMaterial) {
+        AlgorithmHandler handler = new AlgorithmHandler(decryptionMaterial.getAlgorithm(), decryptionMaterial.getPlaintextDataKey(), Cipher.DECRYPT_MODE);
+        if(!cipherMaterial.getCipherHeader().verifyHeaderAuthTag(handler)){
+            throw new CipherTextParseException("header authTag verify failed");
+        }
+
+        byte[] iv = cipherMaterial.getCipherBody().getIv();
+        handler.cipherInit(iv);
+        if (decryptionMaterial.getAlgorithm().isWithAad()) {
+            handler.updateAAD(cipherMaterial.getCipherHeader().getEncryptionContextBytes());
+        }
+        CryptoInputStream is = new CryptoInputStream(inputStream, handler, 4096);
+        CopyStreamUtil.copyIsToOs(is, outputStream);
+    }
+
     private boolean verifyHeaderAuthTag(CipherHeader cipherHeader, AlgorithmHandler handler) {
         try {
             byte[] headerAuthTag = cipherHeader.getHeaderAuthTag();
@@ -95,6 +141,16 @@ public class DefaultEncryptHandler implements EncryptHandler {
                 return false;
         }catch(Exception e){
             return false;
+        }
+    }
+
+    private void writeIv(OutputStream outputStream, byte[] iv) {
+        try {
+            outputStream.write(CopyStreamUtil.intToBytes(iv.length));
+            outputStream.write(iv);
+            outputStream.flush();
+        } catch (IOException e) {
+            throw new AliyunException(e);
         }
     }
 }

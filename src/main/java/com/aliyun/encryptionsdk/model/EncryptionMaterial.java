@@ -18,10 +18,19 @@ import javax.crypto.SecretKey;
 import java.util.*;
 
 public class EncryptionMaterial {
+    private int version = Constants.SDK_VERSION;
     private SecretKey plaintextDataKey;
     private List<EncryptedDataKey> encryptedDataKeys = new ArrayList<>();
     private Map<String, String> encryptionContext = new HashMap<>();
     private CryptoAlgorithm algorithm;
+
+    public int getVersion() {
+        return version;
+    }
+
+    public void setVersion(int version) {
+        this.version = version;
+    }
 
     public SecretKey getPlaintextDataKey() {
         return plaintextDataKey;

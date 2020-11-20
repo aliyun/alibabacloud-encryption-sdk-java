@@ -122,13 +122,13 @@ public class AliyunCryptoTest {
 
         // 使用原始消息
         byte[] signature = aliyunCrypto.sign(provider, msg, ContentType.MESSAGE).getResult();
-        Boolean isOk = aliyunCrypto.verify(provider, msg, signature, ContentType.MESSAGE).getResult();
+        Boolean isOk = aliyunCrypto.verify(provider, msg, signature, ContentType.MESSAGE);
         assertTrue(isOk);
 
         // 使用消息摘要
         byte[] sha256Digest = hex2Bytes("FECC75FE2A23D8EAFBA452EE0B8B6B56BECCF52278BF1398AADDEECFE0EA0FCE");
         signature = aliyunCrypto.sign(provider, sha256Digest, ContentType.DIGEST).getResult();
-        isOk = aliyunCrypto.verify(provider, sha256Digest, signature, ContentType.DIGEST).getResult();
+        isOk = aliyunCrypto.verify(provider, sha256Digest, signature, ContentType.DIGEST);
         assertTrue(isOk);
 
         // SM2非对称密钥签名验签，keySpec=EC_SM2，keyUsage=SIGN/VERIFY
@@ -138,13 +138,13 @@ public class AliyunCryptoTest {
 
         // 使用原始消息
         signature = aliyunCrypto.sign(provider, msg, ContentType.MESSAGE).getResult();
-        isOk = aliyunCrypto.verify(provider, msg, signature, ContentType.MESSAGE).getResult();
+        isOk = aliyunCrypto.verify(provider, msg, signature, ContentType.MESSAGE);
         assertTrue(isOk);
 
         // 使用消息摘要
         byte[] sm3Digest = hex2Bytes("6BCAADF4BE635BA03D88AC3FFA03E19F1907FCE5C07F3485DDF87444CEB5FEDC");
         signature = aliyunCrypto.sign(provider, sm3Digest, ContentType.DIGEST).getResult();
-        isOk = aliyunCrypto.verify(provider, sm3Digest, signature, ContentType.DIGEST).getResult();
+        isOk = aliyunCrypto.verify(provider, sm3Digest, signature, ContentType.DIGEST);
         assertTrue(isOk);
     }
 
@@ -170,7 +170,7 @@ public class AliyunCryptoTest {
                 "8wIDAQAB\n" +
                 "-----END PUBLIC KEY-----\n";
         provider = new KmsAsymmetricKeyProvider(rsaPublicKey, SignatureAlgorithm.RSA_PKCS1_SHA_256);
-        Boolean isOk = aliyunCrypto.verify(provider, msg, signature, ContentType.MESSAGE).getResult();
+        Boolean isOk = aliyunCrypto.verify(provider, msg, signature, ContentType.MESSAGE);
         assertTrue(isOk);
     }
 
@@ -192,7 +192,7 @@ public class AliyunCryptoTest {
                 "4Bin+wsZ9YB/XHFBEUhFoKSQBRKwOVDmLZgEespX0SK4GVOXYV1VdD4+QQ==\n" +
                 "-----END PUBLIC KEY-----\n";
         provider = new KmsAsymmetricKeyProvider(sm2PublicKey, SignatureAlgorithm.SM2DSA);
-        Boolean isOk = aliyunCrypto.verify(provider, msg, signature, ContentType.MESSAGE).getResult();
+        Boolean isOk = aliyunCrypto.verify(provider, msg, signature, ContentType.MESSAGE);
         assertTrue(isOk);
     }
 
@@ -231,7 +231,7 @@ public class AliyunCryptoTest {
                 "gfb813IMppKt7S7o3JIZUkNSukM=\n" +
                 "-----END CERTIFICATE-----";
         provider = new KmsAsymmetricKeyProvider(rsaCert);
-        Boolean isOk = aliyunCrypto.verify(provider, msg, signature, ContentType.MESSAGE).getResult();
+        Boolean isOk = aliyunCrypto.verify(provider, msg, signature, ContentType.MESSAGE);
         assertTrue(isOk);
     }
 
@@ -261,7 +261,7 @@ public class AliyunCryptoTest {
                 "AkPVVO9+3/nxMfECIQDJ8x71bbN1TzXBtjPXIxOGcG3WY2/HH8rzLmiJvNAbzw==\n" +
                 "-----END CERTIFICATE-----";
         provider = new KmsAsymmetricKeyProvider(sm2Cert);
-        Boolean isOk = aliyunCrypto.verify(provider, msg, signature, ContentType.MESSAGE).getResult();
+        Boolean isOk = aliyunCrypto.verify(provider, msg, signature, ContentType.MESSAGE);
         assertTrue(isOk);
     }
 

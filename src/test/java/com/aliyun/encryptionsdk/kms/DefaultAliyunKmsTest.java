@@ -31,12 +31,12 @@ import static org.junit.Assert.*;
 
 public class DefaultAliyunKmsTest {
     private static CmkId cmkId;
-    private static final String RSA2048_KEY_ID = "acs:kms:cn-hangzhou:1540355698848459:key/4358f298-8e30-4849-9791-52e68dbd9d1e";
-    private static final String RSA2048_KEY_VERSION_ID = "e71daa69-c321-4014-b0c4-ba070c7839ee";
-    private static final String AES256_KEY_ID = "acs:kms:cn-hangzhou:1540355698848459:key/8f4e7312-b204-4f6b-b473-447fe038f1b9";
-    private static final String AES256_KEY_VERSION_ID = "82628348-c73a-4451-a9a2-d37d4a6497ef";
-    private static final String SM2_KEY_ID = "acs:kms:cn-hangzhou:1540355698848459:key/1f777304-404b-4278-a56e-4343f20534fd";
-    private static final String SM2_KEY_VERSION_ID = "9104b2a9-f602-403e-8c63-767cebd2044d";
+    private static final String RSA2048_KEY_ID = "acs:kms:RegionId:UserId:key/CmkId";
+    private static final String RSA2048_KEY_VERSION_ID = "versionId";
+    private static final String AES256_KEY_ID = "acs:kms:RegionId:UserId:key/CmkId";
+    private static final String AES256_KEY_VERSION_ID = "versionId";
+    private static final String SM2_KEY_ID = "acs:kms:RegionId:UserId:key/CmkId";
+    private static final String SM2_KEY_VERSION_ID = "versionId";
     private static CryptoAlgorithm algorithm;
     private static Map<String, String> encryptionContext;
     private static AliyunConfig config;
@@ -71,7 +71,7 @@ public class DefaultAliyunKmsTest {
         AliyunKms.GenerateDataKeyResult generateDataKeyResult = aliyunKms.generateDataKey(cmkId, algorithm, encryptionContext);
         String plaintext = generateDataKeyResult.getPlaintext();
         EncryptedDataKey encryptedDataKey = aliyunKms.encryptDataKey(cmkId, plaintext, encryptionContext);
-        AliyunKms.DecryptDataKeyResult decryptDataKeyResult = aliyunKms.decryptDataKey(encryptedDataKey, Collections.EMPTY_MAP);
+        AliyunKms.DecryptDataKeyResult decryptDataKeyResult = aliyunKms.decryptDataKey(encryptedDataKey, encryptionContext);
         assertEquals(plaintext, decryptDataKeyResult.getPlaintext());
     }
 

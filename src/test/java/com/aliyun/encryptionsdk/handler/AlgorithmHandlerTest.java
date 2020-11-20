@@ -15,6 +15,7 @@
 package com.aliyun.encryptionsdk.handler;
 
 import com.aliyun.encryptionsdk.AliyunConfig;
+import com.aliyun.encryptionsdk.AliyunCrypto;
 import com.aliyun.encryptionsdk.ckm.DefaultCryptoKeyManager;
 import com.aliyun.encryptionsdk.kms.DefaultAliyunKms;
 import com.aliyun.encryptionsdk.model.CryptoAlgorithm;
@@ -58,7 +59,8 @@ public class AlgorithmHandlerTest {
 
     @Test
     public void testSM4EncryptDecrypt() {
-        CryptoAlgorithm algorithm = CryptoAlgorithm.SM4_CBC_PKCS5_128;
+        AliyunCrypto aliyunCrypto = new AliyunCrypto(CONFIG);
+        CryptoAlgorithm algorithm = CryptoAlgorithm.SM4_GCM_NOPADDING_128;
         BaseDataKeyProvider provider = sm4DataKeyProvider();
         provider.setAlgorithm(createSM4Algorithm());
         EncryptionMaterial encryptDataKeyMaterial = new DefaultCryptoKeyManager().getEncryptDataKeyMaterial(provider, Collections.singletonMap("index", "1"), 1);
@@ -71,18 +73,18 @@ public class AlgorithmHandlerTest {
             contentAad = TestFixtures.serializeContext(encryptDataKeyMaterial.getEncryptionContext());
         }
         byte[] encryptedResult = handler.cipherData(iv, contentAad, PLAIN_TEXT.getBytes(), 0, PLAIN_TEXT.length());
-        handler = new AlgorithmHandler(DEFAULT_ALGORITHM, encryptDataKeyMaterial.getPlaintextDataKey(), Cipher.DECRYPT_MODE);
+        handler = new AlgorithmHandler(createSM4Algorithm(), encryptDataKeyMaterial.getPlaintextDataKey(), Cipher.DECRYPT_MODE);
         byte[] decryptedResult = handler.cipherData(iv, contentAad, encryptedResult, 0, encryptedResult.length);
         assertArrayEquals(PLAIN_TEXT.getBytes(), decryptedResult);
     }
 
     private static CryptoAlgorithm createSM4Algorithm() {
-        return CryptoAlgorithm.SM4_CBC_PKCS5_128;
+        return CryptoAlgorithm.SM4_GCM_NOPADDING_128;
     }
 
     private static BaseDataKeyProvider sm4DataKeyProvider() {
         BaseDataKeyProvider dataKeyProvider = new DefaultDataKeyProvider(SM4_KEY_ID);
         dataKeyProvider.setAliyunKms(new DefaultAliyunKms(CONFIG));
-        return new DefaultDataKeyProvider(SM4_KEY_ID);
+        return dataKeyProvider;
     }
 }

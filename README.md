@@ -57,7 +57,7 @@ $ mvn package -DskipTests
 <dependency>
   <groupId>com.aliyun</groupId>
   <artifactId>alibabacloud-encryption-sdk-java</artifactId>
-  <version>1.0.6</version>
+  <version>1.0.7</version>
 </dependency>
 ```
 
@@ -67,13 +67,13 @@ $ mvn package -DskipTests
 public class BasicEncryptionExample {
     private static final String ACCESS_KEY_ID = "<AccessKeyId>";
     private static final String ACCESS_KEY_SECRET = "<AccessKeySecret>";
-    private static final String CMK_ID = "acs:kms:RegionId:UserId:key/CmkId";
+    private static final String CMK_ARN = "acs:kms:RegionId:UserId:key/CmkId";
     private static final byte[] PLAIN_TEXT = "Hello World".getBytes(StandardCharsets.UTF_8);
-    private static final List<String> KEY_ID_LIST;
+    private static final List<String> CMK_ARN_LIST;
     static {
-        KEY_ID_LIST = new ArrayList<>();
-        KEY_ID_LIST.add("cmk1");
-        KEY_ID_LIST.add("cmk2");
+        CMK_ARN_LIST = new ArrayList<>();
+        CMK_ARN_LIST("cmk1");
+        CMK_ARN_LIST("cmk2");
     }
 
     public static void main(String[] args) {
@@ -87,11 +87,11 @@ public class BasicEncryptionExample {
         //aliyunSDK.setCryptoKeyManager(new CachingCryptoKeyManager(new LocalDataKeyMaterialCache()));
 
         //3.创建provider，用于提供数据密钥或签名
-        BaseDataKeyProvider provider = new DefaultDataKeyProvider(CMK_ID);
+        BaseDataKeyProvider provider = new DefaultDataKeyProvider(CMK_ARN);
         //设置不同的算法（可设置，默认为AES_GCM_NOPADDING_256）
         //provider.setAlgorithm(CryptoAlgorithm.SM4_GCM_NOPADDING_128);
         //设置多CMK（可设置，默认为单CMK）
-        //provider.setMultiCmkId(KEY_ID_LIST);
+        //provider.setMultiCmkId(CMK_ARN_LIST);
         //创建不同的provider
         //BaseDataKeyProvider provider = new SecretManagerDataKeyProvider(CMK_ID, "dataKeySecretName");
 
@@ -107,4 +107,4 @@ public class BasicEncryptionExample {
         Assert.assertArrayEquals(PLAIN_TEXT, plainResult.getResult());
     }
 }
-```
+```2

@@ -14,9 +14,17 @@
 
 package com.aliyun.encryptionsdk.provider.dataKey;
 
+import com.aliyun.encryptionsdk.exception.AliyunException;
+import com.aliyun.encryptionsdk.model.CipherBody;
+import com.aliyun.encryptionsdk.model.CipherHeader;
 import com.aliyun.encryptionsdk.model.CipherMaterial;
 import com.aliyun.encryptionsdk.model.CryptoAlgorithm;
 import com.aliyun.encryptionsdk.provider.BaseDataKeyProvider;
+import com.aliyun.encryptionsdk.stream.CopyStreamUtil;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  * {@link BaseDataKeyProvider} 的一个实现，所有加密信息都保存在密文中
@@ -38,7 +46,34 @@ public class DefaultDataKeyProvider extends BaseDataKeyProvider {
     }
 
     @Override
+    public CipherMaterial getCipherMaterial(InputStream inputStream) {
+        try {
+            CipherHeader cipherHeader = new CipherHeader();
+            cipherHeader.deserialize(inputStream);
+            byte[] ivLen = new byte[4];
+            inputStream.read(ivLen);
+            byte[] iv = new byte[CopyStreamUtil.bytesToInt(ivLen)];
+            inputStream.read(iv);
+            CipherBody cipherBody = new CipherBody(iv, null);
+            return new CipherMaterial(cipherHeader, cipherBody);
+        } catch (IOException e) {
+            throw new AliyunException("Failed to get CipherMaterial from InputStream", e);
+        }
+    }
+
+    @Override
     public byte[] processCipherMaterial(CipherMaterial cipherMaterial) {
         return handler.serialize(cipherMaterial);
+    }
+
+    @Override
+    public void writeCipherHeader(CipherHeader cipherHeader, OutputStream outputStream) {
+        byte[] serializeBytes = cipherHeader.serialize();
+        try {
+            outputStream.write(serializeBytes);
+            outputStream.flush();
+        } catch (IOException e) {
+            throw new AliyunException("Failed to write CipherHeader to OutputStream", e);
+        }
     }
 }

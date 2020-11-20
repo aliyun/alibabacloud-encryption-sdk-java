@@ -37,7 +37,7 @@ public class KmsAsymmetricKeyProviderTest {
 
         // 使用原始消息
         byte[] signature = ALIYUN_CRYPTO.sign(provider, msg, ContentType.MESSAGE).getResult();
-        Boolean isOk = ALIYUN_CRYPTO.verify(provider, msg, signature, ContentType.MESSAGE).getResult();
+        Boolean isOk = ALIYUN_CRYPTO.verify(provider, msg, signature, ContentType.MESSAGE);
         assertTrue(isOk);
     }
 }

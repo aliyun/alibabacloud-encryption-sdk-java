@@ -52,8 +52,8 @@ public class OriginalMessageSignatureVerifySample {
         SignatureProvider provider = new KmsAsymmetricKeyProvider(KEY_ID, KEY_VERSION_ID, SignatureAlgorithm.RSA_PKCS1_SHA_256);
         // 4、sdk验签并返回结果
         try {
-            SignatureResult<Boolean> verifyResult = aliyunCrypto.verify(provider, msg, signature, ContentType.MESSAGE);
-            return verifyResult.getResult();
+            Boolean verifyResult = aliyunCrypto.verify(provider, msg, signature, ContentType.MESSAGE);
+            return verifyResult;
         } catch (InvalidAlgorithmException e) {
             System.out.println("Failed.");
             System.out.println("Error message: " + e.getMessage());

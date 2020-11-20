@@ -143,6 +143,15 @@ public class DefaultAliyunKms implements AliyunKms {
     }
 
     @Override
+    public GetSecretValueResult getSecretValue(CmkId keyId, String secretName, String versionId) {
+        GetSecretValueRequest request = new GetSecretValueRequest();
+        request.setSecretName(secretName);
+        request.setVersionId(versionId);
+        GetSecretValueResponse response = getResult(GetSecretValueResponse.class, request, keyId);
+        return new GetSecretValueResult(response.getSecretName(), response.getSecretData(), response.getSecretDataType());
+    }
+
+    @Override
     public String getPublicKey(CmkId keyId, String keyVersionId) {
         final GetPublicKeyRequest request = new GetPublicKeyRequest();
         request.setAcceptFormat(FormatType.JSON);

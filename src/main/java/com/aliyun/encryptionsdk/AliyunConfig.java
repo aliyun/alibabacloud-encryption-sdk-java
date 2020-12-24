@@ -25,6 +25,7 @@ public class AliyunConfig {
      */
     private static final int MAX_RETRIES = 5;
 
+    private String region;
     private int maxRetries;
     private BackoffStrategy backoffStrategy;
     private AlibabaCloudCredentialsProvider provider;
@@ -38,6 +39,14 @@ public class AliyunConfig {
         this.maxRetries = MAX_RETRIES;
         this.backoffStrategy = new FullJitterBackoffStrategy(200L, 10000L);
         this.provider = provider;
+    }
+
+    public String getRegion() {
+        return region;
+    }
+
+    public void setRegion(String region) {
+        this.region = region;
     }
 
     public int getMaxRetries() {

@@ -15,6 +15,7 @@
 package com.aliyun.encryptionsdk.model.test;
 
 import com.aliyun.encryptionsdk.AliyunConfig;
+import com.aliyun.encryptionsdk.AliyunCrypto;
 import com.aliyun.encryptionsdk.kms.AliyunKms;
 import com.aliyun.encryptionsdk.kms.DefaultAliyunKms;
 import com.aliyun.encryptionsdk.model.CmkId;
@@ -33,13 +34,14 @@ public class EncryptedDataKeyTest {
 
     @Test
     public void test(){
+        AliyunCrypto crypto = new AliyunCrypto(CONFIG);
         CryptoAlgorithm algorithm = CryptoAlgorithm.AES_GCM_NOPADDING_256;
         DefaultAliyunKms aliyunKms = new DefaultAliyunKms(CONFIG);
         AliyunKms.GenerateDataKeyResult generateDataKeyResult =
                 aliyunKms.generateDataKey(new CmkId(KEY_ID), algorithm, Collections.singletonMap("test", "generate"));
         String plaintext = generateDataKeyResult.getPlaintext();
         EncryptedDataKey encryptedDataKey = aliyunKms.encryptDataKey(new CmkId(KEY_ID), plaintext, Collections.singletonMap("test", "generate"));
-        AliyunKms.DecryptDataKeyResult decryptDataKeyResult = aliyunKms.decryptDataKey(encryptedDataKey, Collections.emptyMap());
+        AliyunKms.DecryptDataKeyResult decryptDataKeyResult = aliyunKms.decryptDataKey(encryptedDataKey, Collections.singletonMap("test", "generate"));
         assertEquals(plaintext, decryptDataKeyResult.getPlaintext());
     }
 }

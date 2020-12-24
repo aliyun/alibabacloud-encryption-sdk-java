@@ -40,6 +40,7 @@ public class AlgorithmHandler {
     private Cipher cipher;
     private CryptoAlgorithm algorithm;
     private SecretKey keySpec;
+    private boolean initialized = false;
 
     public AlgorithmHandler(CryptoAlgorithm algorithm, SecretKey keySpec, int mode) {
         try {
@@ -53,6 +54,27 @@ public class AlgorithmHandler {
         this.mode = mode;
     }
 
+    public CryptoAlgorithm getAlgorithm() {
+        return algorithm;
+    }
+    public void cipherInit(byte[] iv) {
+        if ((iv!=null) && (iv.length != algorithm.getIvLen())) {
+            throw new IllegalArgumentException("Invalid iv length: " + iv.length);
+        }
+        AlgorithmParameterSpec spec = algorithm.getSpec(iv);
+        try {
+            if (spec == null) {
+                cipher.init(mode, keySpec);
+            } else {
+                cipher.init(mode, keySpec, spec);
+            }
+            initialized = true;
+        } catch (Exception e) {
+            CommonLogger.getCommonLogger(Constants.MODE_NAME).errorf(algorithm.getCryptoName() + " init failed" ,e);
+            throw new SecurityProcessException(algorithm.getCryptoName() + " init failed", e);
+        }
+    }
+
     /**
      * 使用 {@link Cipher} 处理数据
      * @param iv 随机向量
@@ -63,12 +85,8 @@ public class AlgorithmHandler {
      * @return 处理完成后的数据
      */
     public byte[] cipherData(byte[] iv, byte[] contentAad, final byte[] content, int off, int len) {
-        if (iv.length != algorithm.getIvLen()) {
-            throw new IllegalArgumentException("Invalid iv length: " + iv.length);
-        }
-        AlgorithmParameterSpec spec = algorithm.getSpec(iv);
         try {
-            cipher.init(mode, keySpec, spec);
+            cipherInit(iv);
             if (contentAad != null && algorithm.isWithAad()) {
                 cipher.updateAAD(contentAad);
             }
@@ -76,6 +94,33 @@ public class AlgorithmHandler {
         } catch (Exception e) {
             CommonLogger.getCommonLogger(Constants.MODE_NAME).errorf("Failed to obtain " + algorithm.getCryptoName() + " cipher result" ,e);
             throw new SecurityProcessException("Failed to obtain " + algorithm.getCryptoName() + " cipher result", e);
+        }
+    }
+
+    public void updateAAD(byte[] contentAad) {
+        cipher.updateAAD(contentAad);
+    }
+
+    public byte[] update(final byte[] content, int off, int len) {
+        if (initialized) {
+            return this.cipher.update(content, off, len);
+        } else {
+            CommonLogger.getCommonLogger(Constants.MODE_NAME).errorf("cipher is not initialized");
+            throw new SecurityProcessException("cipher is not initialized");
+        }
+    }
+
+    public byte[] doFinal() {
+        if (initialized) {
+            try {
+                return this.cipher.doFinal();
+            } catch (Exception e) {
+                CommonLogger.getCommonLogger(Constants.MODE_NAME).errorf(algorithm.getCryptoName() + " doFinal failed" ,e);
+                throw new SecurityProcessException(algorithm.getCryptoName() + " doFinal failed", e);
+            }
+        } else {
+            CommonLogger.getCommonLogger(Constants.MODE_NAME).errorf("cipher is not initialized");
+            throw new SecurityProcessException("cipher is not initialized");
         }
     }
 

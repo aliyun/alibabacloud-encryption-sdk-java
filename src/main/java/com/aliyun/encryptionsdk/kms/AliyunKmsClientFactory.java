@@ -21,6 +21,8 @@ import com.aliyuncs.http.HttpClientConfig;
 import com.aliyuncs.profile.DefaultProfile;
 import com.aliyuncs.profile.IClientProfile;
 
+import java.util.Properties;
+
 public class AliyunKmsClientFactory {
 
     public static IAcsClient getClient(AliyunConfig config, String region) {
@@ -31,6 +33,21 @@ public class AliyunKmsClientFactory {
         IClientProfile profile = DefaultProfile.getProfile(region);
         HttpClientConfig clientConfig = HttpClientConfig.getDefault();
         profile.setHttpClientConfig(clientConfig);
-        return new DefaultAcsClient(profile, config.getProvider());
+
+        DefaultAcsClient client = new DefaultAcsClient(profile, config.getProvider());
+        client.appendUserAgent("AliyunEncSDK-java", getProjectVersion());
+        return client;
+    }
+
+    private static String getProjectVersion() {
+        Properties props = new Properties();
+        try{
+            props.load(AliyunKmsClientFactory.class.getClassLoader().getResourceAsStream("encsdk.properties"));
+            String encsdkVersion = props.getProperty("encsdk.project.version");
+            return encsdkVersion;
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+        return "";
     }
 }

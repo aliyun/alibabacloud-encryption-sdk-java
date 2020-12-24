@@ -21,6 +21,8 @@ import com.aliyun.encryptionsdk.logger.CommonLogger;
 import com.aliyun.encryptionsdk.model.*;
 import com.aliyun.encryptionsdk.provider.dataKey.AbstractExternalStoreDataKeyProvider;
 import javax.crypto.spec.SecretKeySpec;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
@@ -125,6 +127,9 @@ public abstract class BaseDataKeyProvider {
      */
     public abstract CipherMaterial getCipherMaterial(byte[] cipherText);
 
+    public abstract CipherMaterial getCipherMaterial(InputStream inputStream);
+
+
     /**
      * 处理密码材料生成字节数组，字节数组内容可能包含：
      * 1.{@link CipherMaterial} 的所有内容
@@ -134,6 +139,8 @@ public abstract class BaseDataKeyProvider {
      * @return 加密结果
      */
     public abstract byte[] processCipherMaterial(CipherMaterial cipherMaterial);
+
+    public abstract void writeCipherHeader(CipherHeader cipherHeader, OutputStream outputStream);
 
     private EncryptionMaterial generateDataKey(EncryptionMaterial material) {
         AliyunKms.GenerateDataKeyResult result = kms.generateDataKey(keyId, material.getAlgorithm(), material.getEncryptionContext());

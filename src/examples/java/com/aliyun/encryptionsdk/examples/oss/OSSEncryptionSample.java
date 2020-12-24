@@ -20,6 +20,8 @@ import com.aliyun.encryptionsdk.exception.CipherTextParseException;
 import com.aliyun.encryptionsdk.exception.InvalidAlgorithmException;
 import com.aliyun.encryptionsdk.exception.UnFoundDataKeyException;
 import com.aliyun.encryptionsdk.handler.Asn1FormatHandler;
+import com.aliyun.encryptionsdk.kms.AliyunKms;
+import com.aliyun.encryptionsdk.kms.DefaultAliyunKms;
 import com.aliyun.encryptionsdk.model.*;
 import com.aliyun.encryptionsdk.provider.BaseDataKeyProvider;
 import com.aliyun.encryptionsdk.provider.dataKey.DefaultDataKeyProvider;
@@ -29,15 +31,15 @@ import com.aliyun.oss.model.GetObjectRequest;
 import com.aliyun.oss.model.OSSObject;
 import com.aliyun.oss.model.ObjectMetadata;
 
+import javax.crypto.Cipher;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.Base64;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Map;
+import java.util.*;
 
 /**
  * OSS加密上传示例，本示例展示了如何使用EncryptionSDK对OSS上传内容进行加密，解密及分片解密的过程
@@ -237,32 +239,64 @@ public class OSSEncryptionSample {
         try {
             // 构建密文头部
             CipherHeader cipherHeader = asn1FormatHandler.deserializeCipherHeader(cipherHeaderBytes);
-            // 头部iv长度在gcm模式下为12,需要填充至16,否则无法通过长度验证
-            cipherHeader.setHeaderIv(paddingIV(cipherHeader.getHeaderIv(), 4));
-            // 设置头部解密算法使用ctr模式
-            cipherHeader.setAlgorithm(CryptoAlgorithm.AES_CTR_NOPADDING_256);
+            List<EncryptedDataKey> datakeyList = cipherHeader.getEncryptedDataKeys();
+            EncryptedDataKey encDataKey = datakeyList.get(0);
+
+            byte[] datakeyBytes = decryptDataKey(encDataKey, cipherHeader.getEncryptionContext());
+            SecretKeySpec keySpec = new SecretKeySpec(datakeyBytes, cipherHeader.getAlgorithm().getKeyName());
+
 
             // 计算当前分片密文起始分组位置，如果分片头与分组位置不对齐, 需要进行填充
             int needPaddingLen = offset % cipherHeader.getAlgorithm().getBlockSize();
-            byte[] bytes = paddingCipherText(cipherText, needPaddingLen);
+            byte[] cipherTextPadBytes = paddingCipherText(cipherText, needPaddingLen);
             // 构建密文体部，体部iv长度在gcm模式下为12，ctr模式为16，需要进行填充
-            CipherBody cipherBody = new CipherBody(paddingIV(iv, offset), bytes);
-            // 构建密文材料
-            CipherMaterial cipherMaterial = new CipherMaterial(cipherHeader, cipherBody);
-            byte[] serializeCipherText = asn1FormatHandler.serialize(cipherMaterial);
+            byte[] ctrIV = paddingIV(iv, offset);
 
-            // 设置ctr算法解密
-            DefaultDataKeyProvider defaultDataKeyProvider = new DefaultDataKeyProvider(keyId);
-            // 解密
-            CryptoResult<byte[]> decrypt = aliyunCrypto.decrypt(defaultDataKeyProvider, serializeCipherText);
+            byte[] decryptBytes = decryptCTR( cipherTextPadBytes, keySpec, ctrIV, cipherHeader.getAlgorithm().getCryptoName());
 
             // 去掉填充内容并返回结果
-            return unPaddingPlaintext(decrypt.getResult(), needPaddingLen);
+            return unPaddingPlaintext(decryptBytes, needPaddingLen);
         } catch (CipherTextParseException | InvalidAlgorithmException | UnFoundDataKeyException e) {
             System.out.println("Failed.");
             System.out.println("Error message: " + e.getMessage());
+        } catch (Exception e){
+            System.out.println("Error message: " + e.getMessage());
         }
         return null;
+    }
+
+    public static byte[] decryptCTR(byte[] cipherText, SecretKeySpec keySpec, byte[] ctrIV, String headerCipherSpec) throws Exception
+    {
+        String ctrCipherSpec;
+        if(headerCipherSpec.equals("AES/GCM/NoPadding"))
+            ctrCipherSpec = "AES/CTR/NoPadding";
+        else if(headerCipherSpec.equals("SM4/GCM/NoPadding"))
+            ctrCipherSpec = "SM4/CTR/NoPadding";
+        else
+            throws new Exception("Error Crypto cipher spec");
+        // Get Cipher Instance
+        Cipher cipher = Cipher.getInstance(ctrCipherSpec);
+
+        // Create IVParameterSpec
+        IvParameterSpec ivSpec = new IvParameterSpec(ctrIV);
+
+        // Initialize Cipher for DECRYPT_MODE
+        cipher.init(Cipher.DECRYPT_MODE, keySpec, ivSpec);
+
+        // Perform Decryption
+        byte[] decryptedText = cipher.doFinal(cipherText);
+
+        return decryptedText;
+    }
+
+    public static byte[] decryptDataKey(EncryptedDataKey encDatakey, Map<String,String> context){
+        AliyunConfig config = new AliyunConfig();
+        config.withAccessKey(ACCESS_KEY_ID, ACCESS_KEY_SECRET);
+        DefaultAliyunKms aliyunKms = new DefaultAliyunKms(config);
+
+        AliyunKms.DecryptDataKeyResult decDataKeyRes = aliyunKms.decryptDataKey(encDatakey, context);
+        byte[] datakey = org.bouncycastle.util.encoders.Base64.decode(decDataKeyRes.getPlaintext());
+        return datakey;
     }
 
     /**

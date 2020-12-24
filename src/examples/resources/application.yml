@@ -6,7 +6,6 @@ spring:
   datasource:
     url: jdbc:mysql://IP:PORT/DATABASE?useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull&allowMultiQueries=true&useSSL=false&serverTimezone=UTC
     username: "*****"
-    password: "*****"
   jpa:
     database: MySQL
     database-platform: org.hibernate.dialect.MySQL5InnoDBDialect

@@ -26,7 +26,7 @@ import java.util.Collections;
 import static org.junit.Assert.assertArrayEquals;
 
 public class DefaultDataKeyProviderTest {
-    private static final String KEY_ID = "acs:kms:cn-hangzhou:1540355698848459:key/8f4e7312-b204-4f6b-b473-447fe038f1b9";
+    private static final String KEY_ID = "acs:kms:RegionId:UserId:key/CmkId";
     private static final String PLAIN_TEXT = "this is test.";
     private static final AliyunConfig CONFIG = TestAccount.AliyunKMS.getAliyunConfig();
     @Test

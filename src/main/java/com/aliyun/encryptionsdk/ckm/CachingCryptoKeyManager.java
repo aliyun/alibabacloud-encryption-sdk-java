@@ -18,6 +18,7 @@ import com.aliyun.encryptionsdk.cache.DataKeyCache;
 import com.aliyun.encryptionsdk.cache.LocalDataKeyMaterialCache;
 import com.aliyun.encryptionsdk.exception.AliyunException;
 import com.aliyun.encryptionsdk.exception.InvalidArgumentException;
+import com.aliyun.encryptionsdk.exception.UnFoundDataKeyException;
 import com.aliyun.encryptionsdk.logger.CommonLogger;
 import com.aliyun.encryptionsdk.model.*;
 import com.aliyun.encryptionsdk.provider.BaseDataKeyProvider;
@@ -161,6 +162,10 @@ public class CachingCryptoKeyManager implements CryptoKeyManager {
 
         CommonLogger.getCommonLogger(Constants.MODE_NAME).infof("This decryption misses the cache");
         DecryptionMaterial result = provider.decryptDataKey(material, encryptedDataKeys);
+        if (result == null) {
+            CommonLogger.getCommonLogger(Constants.MODE_NAME).errorf("Failed to get dataKey from encryptedDataKeys");
+            throw new UnFoundDataKeyException("Failed to get dataKey from encryptedDataKeys");
+        }
         cache.putDecryptEntry(cacheId, maxSurvivalTime, result);
         CommonLogger.getCommonLogger(Constants.MODE_NAME).infof(String.format("Cache a decryptionMaterial[CacheId: %s]", cacheId));
         return result;

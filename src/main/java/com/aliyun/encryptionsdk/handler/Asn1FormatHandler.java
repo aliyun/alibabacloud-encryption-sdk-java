@@ -53,7 +53,7 @@ public class Asn1FormatHandler implements FormatHandler {
         CipherHeader cipherHeader = cipherMaterial.getCipherHeader();
         CipherBody cipherBody = cipherMaterial.getCipherBody();
         if (cipherHeader != null) {
-            this.version = new ASN1Integer(SDK_VERSION);
+            this.version = new ASN1Integer(cipherHeader.getVersion());
             this.algorithm = new ASN1Integer(cipherHeader.getAlgorithm().getValue());
             this.encryptedDataKeys = combineEncryptedDataKeys(cipherHeader.getEncryptedDataKeys());
             this.encryptionContext = combineEncryptionContext(cipherHeader.getEncryptionContext());
@@ -91,7 +91,7 @@ public class Asn1FormatHandler implements FormatHandler {
 
     @Override
     public byte[] serializeCipherHeader(CipherHeader cipherHeader) {
-        this.version = new ASN1Integer(SDK_VERSION);
+        this.version = new ASN1Integer(cipherHeader.getVersion());
         this.algorithm = new ASN1Integer(cipherHeader.getAlgorithm().getValue());
         this.encryptedDataKeys = combineEncryptedDataKeys(cipherHeader.getEncryptedDataKeys());
         this.encryptionContext = combineEncryptionContext(cipherHeader.getEncryptionContext());
@@ -109,7 +109,7 @@ public class Asn1FormatHandler implements FormatHandler {
         List<EncryptedDataKey> encryptedDataKeys = parseEncryptedDataKeys(this.encryptedDataKeys);
         Map<String,String> encryptionContext = parseEncryptionContext(this.encryptionContext);
         CryptoAlgorithm algorithm = CryptoAlgorithm.getAlgorithm(this.algorithm.getValue().intValue());
-        return new CipherHeader(encryptedDataKeys, encryptionContext, algorithm, headerIv.getOctets(), headerAuthTag.getOctets());
+        return new CipherHeader(version.getValue().intValue(), encryptedDataKeys, encryptionContext, algorithm, headerIv.getOctets(), headerAuthTag.getOctets());
     }
 
     @Override

@@ -17,6 +17,10 @@ package com.aliyun.encryptionsdk.handler;
 import com.aliyun.encryptionsdk.model.CipherMaterial;
 import com.aliyun.encryptionsdk.model.DecryptionMaterial;
 import com.aliyun.encryptionsdk.model.EncryptionMaterial;
+import com.aliyun.encryptionsdk.provider.BaseDataKeyProvider;
+
+import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  * 定义数据的加解密方法
@@ -38,4 +42,23 @@ public interface EncryptHandler {
      * @return 明文字节数组
      */
     byte[] decrypt(CipherMaterial cipherMaterial, DecryptionMaterial decryptionMaterial);
+
+    /**
+     * 对 {@link InputStream} 输入流进行加密，并将加密结果写入 {@link OutputStream}
+     * @param inputStream 待加密流
+     * @param outputStream 已加密流
+     * @param provider 数据密钥提供
+     * @param encryptionMaterial 加密材料
+     * @return 加密结果
+     */
+    CipherMaterial encryptStream(InputStream inputStream, OutputStream outputStream, BaseDataKeyProvider provider, EncryptionMaterial encryptionMaterial);
+
+    /**
+     * 对 {@link InputStream} 输入流进行解密，并将解密结果写入 {@link OutputStream}
+     * @param inputStream 加密流
+     * @param outputStream 已解密流
+     * @param cipherMaterial 加密信息
+     * @param decryptionMaterial 解密材料
+     */
+    void decryptStream(InputStream inputStream, OutputStream outputStream, CipherMaterial cipherMaterial, DecryptionMaterial decryptionMaterial);
 }

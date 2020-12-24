@@ -42,21 +42,25 @@ public class MultiCmkSample {
     // 日志系统
     private static final Logger LOGGER = LoggerFactory.getLogger(MultiCmkSample.class);
     // cmkId
-    private static final String KEY_ID = "acs:kms:regionId:userId:key/keyId";
-    private static final String SHANGHAI_KEY_ID = "acs:kms:cn-shanghai:userId:key/keyId";
-    private static final String BEIJING_KEY_ID = "acs:kms:cn-beijing:userId:key/keyId";
+    private static final String MASTER_CMK_ARN = "acs:kms:cn-beijing:userId:key/keyId";
+    private static final String SHANGHAI_KEY_ARN = "acs:kms:cn-shanghai:userId:key/keyId";
+    private static final String HANGZHOU_KEY_ARN = "acs:kms:cn-hangzhou:userId:key/keyId";
 
     public static void main(final String[] args) {
         AliyunConfig config = new AliyunConfig();
         config.withAccessKey(ACCESS_KEY_ID, ACCESS_KEY_SECRET);
+        
         List<String> keyIds = new ArrayList<>();
         // 不同的cmkId(支持多region)
         keyIds.add(SHANGHAI_KEY_ID);
-        keyIds.add(BEIJING_KEY_ID);
+        keyIds.add(HANGZHOU_KEY_ARN);
+
+        // 对数据进行加密
         CryptoResult<byte[]> encryptResult = encryptSample(config, keyIds, PLAIN_TEXT);
+
         // 指定一个cmk进行解密
         CryptoResult<byte[]> shanghaiDecryptResult = decryptSample(config, SHANGHAI_KEY_ID, encryptResult.getResult());
-        CryptoResult<byte[]> beijingDecryptResult = decryptSample(config, BEIJING_KEY_ID, encryptResult.getResult());
+        CryptoResult<byte[]> beijingDecryptResult = decryptSample(config, HANGZHOU_KEY_ARN, encryptResult.getResult());
         assertArrayEquals(PLAIN_TEXT, shanghaiDecryptResult.getResult());
         assertArrayEquals(PLAIN_TEXT, beijingDecryptResult.getResult());
     }
@@ -72,10 +76,10 @@ public class MultiCmkSample {
     private static CryptoResult<byte[]> encryptSample(AliyunConfig config, List<String> keyIds, byte[] plainText) {
         // 1、构建sdk(可以指定自定义加密处理器和日志)
         AliyunCrypto aliyunCrypto = new AliyunCrypto(config);
-//        AliyunCrypto aliyunCrypto = new AliyunCrypto(encryptHandler, config, LOGGER);
 
-        // 2、构建多cmk的dataKeyProvider
-        BaseDataKeyProvider dataKeyProvider = new DefaultDataKeyProvider(KEY_ID);
+        // 2、设置主地域CMK ARN，在主地域调用KMS GenerateDataKey生成数据密钥(DataKey)
+        BaseDataKeyProvider dataKeyProvider = new DefaultDataKeyProvider(MASTER_CMK_ARN);
+        // 构建多cmk的dataKeyProvider
         dataKeyProvider.setMultiCmkId(keyIds);
 
         // 3、构建加密上下文
@@ -105,12 +109,11 @@ public class MultiCmkSample {
     private static CryptoResult<byte[]> decryptSample(AliyunConfig config, String cmk, byte[] cipherText) {
         // 1、构建sdk
         AliyunCrypto aliyunCrypto = new AliyunCrypto(config);
-//        AliyunCrypto aliyunCrypto = new AliyunCrypto(encryptHandler, config, LOGGER);
 
         // 2、构建dataKeyProvider
         BaseDataKeyProvider dataKeyProvider = new DefaultDataKeyProvider(cmk);
 
-        // 4、sdk解密
+        // 3、sdk解密
         try {
             return aliyunCrypto.decrypt(dataKeyProvider, cipherText);
         } catch (InvalidAlgorithmException | UnFoundDataKeyException e) {

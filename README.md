@@ -1,59 +1,74 @@
-阿里云加密软件工具开发包(AlibabaCloud Encryption SDK)是一个客户端密码库，通过与阿里云[密钥管理服务(KMS)](https://www.aliyun.com/product/kms)相结合，可以帮助用户快速实现数据的加解密、签名验签功能。
+English | [简体中文](README-CN.md)
 
-借助AlibabaCloud Encryption SDK和密钥管理服务(KMS)，您可以专注于数据加解密、电子签名验签等业务功能，无需花费大量成本来保障密钥的保密性、完整性和可用性。
-阿里云Encryption SDK具有以下功能：
-- 数据加解密、签名验签功能
-- 借助阿里云KMS生成和保护数据密钥
-- 自定义的加密数据格式
+![](https://aliyunsdk-pages.alicdn.com/icons/AlibabaCloud.svg)
 
-通过阿里云Encryption SDK，定一个DataKeyProvider，设置相应的KMS 用户主密钥(CMK)，就可以对数据进行加解密操作。
+## AlibabaCloud Encryption SDK for Java
 
-### 加密流程
+Alibaba Cloud Encryption SDK supports data encryption and decryption on the client side. You can use this SDK with Alibaba Cloud [Key Management Service (KMS)](https://www.aliyun.com/product/kms) to encrypt data, decrypt data, sign signatures and verify signatures.
 
-1. 通过KMS控制台，或者调用[CreateKey](https://help.aliyun.com/document_detail/28947.html)接口，创建一个用户主密钥；
-2. 创建DataKeyProvider，设置主密钥ARN；
-3. 调用encrypt接口进行加密，加密过程中，会通过[DefaultDataKeyProvider](https://github.com/aliyun/alibabacloud-encryption-sdk-java/src/main/java/com/aliyun/encryptionsdk/provider/dataKey/DefaultDataKeyProvider.java)调用KMS的[GenerateDataKey](https://help.aliyun.com/document_detail/28948.html)接口创建一个数据密钥，得到数据密钥后对数据进行加密；
+When you use Alibaba Cloud Encryption SDK with KMS, you need only to focus on data encryption, data decryption, signing and verification. This reduces the costs that are required to ensure the security, integrity, and availability of your keys.
 
-#### 加密结果消息格式
-加密结果包含头部和消息体，使用ASN.1编码。消息头部包含加密上下文(Encryption Context)和数据密钥密文等信息，消息体包含IV、密文、和认证信息三部分。
-```
+The SDK provides the following features:
+
+- Data encryption, data decryption, signing and verification
+- Generation and protection of data keys (In this case, you must use the SDK with KMS.)
+- Customization of formats for encrypted data
+
+Before you encrypt and decrypt data, you must use Alibaba Cloud Encryption SDK to create a data key provider and use KMS to create a customer master key (CMK).
+
+### Encryption process
+
+1. Create a CMK by using the KMS console or by calling the [CreateKey](https://help.aliyun.com/document_detail/28947.html) operation.
+2. Initialize the DataKeyProvider instance and specify the Alibaba Cloud Resource Name (ARN) of the CMK that you created.
+3. Call the Encrypt operation to encrypt data. During the encryption process, [DefaultDataKeyProvider](https://github.com/aliyun/alibabacloud-encryption-sdk-java/src/main/java/com/aliyun/encryptionsdk/provider/dataKey/DefaultDataKeyProvider.java) calls the [GenerateDataKey](https://help.aliyun.com/document_detail/28948.html) operation of KMS to create a data key. Then, DefaultDataKeyProvider encrypts data by using the data key.
+
+#### Format of the encryption result
+
+The encryption result is returned as a message that consists of a header and a body. The message is encoded by using Abstract Syntax Notation One (ASN.1). The header contains information such as encryption context and data key ciphertext. The body consists of the initialization vector (IV), ciphertext, and authentication information.
+
+```asn1
 EncryptionMessage ::== SEQUENCE {
-	encryptionHead        EncryptionHead    --加密消息头
-	encryptionBody        EncryptionBody    --加密消息体
+	encryptionHead        EncryptionHead    ---The header of the message header.
+	encryptionBody        EncryptionBody    --The body of the message.
 }
 EncryptionHead ::== SEQUENCE {
-	version               INTEGER                 --版本
-	algorithm             INTEGER                 --算法
-	encryptedDataKeys     SET EncryptedDataKey    --DataKey加密集合
-	encryptionContext     SET EncryptionContext   --加密上下文
-	headerIv              OCTECT STRING           --头部认证向量
-	headerAuthTag         OCTECT STRING           --头部认证信息
+	version               INTEGER                 --The version.
+	algorithm             INTEGER                 --The algorithm.
+	encryptedDataKeys     SET EncryptedDataKey    --The list of data key cyphertext.
+	encryptionContext     SET EncryptionContext   --The encryption context.
+	headerIv              OCTECT STRING           --The initialization vector (IV) for header authentication.
+	headerAuthTag         OCTECT STRING           --The header authentication information.
 }
 EncryptionBody ::== SEQUENCE{
-	iv                    OCTECT STRING           --初始向量
-	cipherText            OCTECT STRING           --密文
-	authTag               OCTECT STRING           --GCM认证信息
+	iv                    OCTECT STRING           --The initialization vector.
+	cipherText            OCTECT STRING           --The cyphertext.
+	authTag               OCTECT STRING           --The authentication data when Galois/Counter Mode is used.
 }
 ```
 
-### 数据签名验签
+### Signature generation and verification
 
-数据签名验签基于公钥密码技术，通过签名者拥有的私钥对数据进行签名，验签者使用公钥对签名信息进行验证。数字签名机制作为保障网络信息安全的手段之一，可以解决伪造、抵赖、冒充和篡改问题。
-阿里云Encryption SDK的签名功能基于阿里云密钥管理服务(KMS)的签名服务。使用时，在阿里云KMS创建一个用于签名验签功能的[非对称用户主密钥(CMK)](https://help.aliyun.com/document_detail/148147.html)，在[KmsAsymmetricKeyProvider](https://github.com/aliyun/alibabacloud-encryption-sdk-java/src/main/java/com/aliyun/encryptionsdk/provider/KmsAsymmetricKeyProvider.java)中指定用户主密钥的KeyId和KeyVersionId，调用阿里云Encryption SDK提供的sign接口，可实现数据的签名功能。
+Signature generation and verification is implemented based on public-key cryptography. The signer uses the private key that matches a public key to sign data. Then, the signer sends the data and signature to the message receiver. The message receiver uses the public key to verify the received signature.
 
+Signature generation and verification is widely used to ensure information security and defend against forgery, repudiation, impersonation, and tampering. The signature feature of Alibaba Cloud Encryption SDK is provided based on the signature feature of KMS.
 
+To sign data, perform the following steps:
 
-### 构建
-----
-```
+1. Create an asymmetric [CMK](https://help.aliyun.com/document_detail/148147.html) for signature verification in KMS.
+2. Specify the KeyId and KeyVersionId of the CMK in [KmsAsymmetricKeyProvider](https://github.com/aliyun/alibabacloud-encryption-sdk-java/src/main/java/com/aliyun/encryptionsdk/provider/KmsAsymmetricKeyProvider.java).
+3. Call the Sign operation of Alibaba Cloud Encryption SDK to sign data.
+
+### Compilation
+
+```shell
 $ git clone https://github.com/aliyun/alibabacloud-encryption-sdk-java.git
 $ cd alibabacloud-encryption-sdk-java
 $ mvn package -DskipTests
 ```
 
-### maven应用
+### Maven dependency
 
-```
+```xml
 <dependency>
   <groupId>com.aliyun</groupId>
   <artifactId>alibabacloud-encryption-sdk-java</artifactId>
@@ -61,9 +76,9 @@ $ mvn package -DskipTests
 </dependency>
 ```
 
-### 快速入门
+### Code example
 
-```
+```java
 public class BasicEncryptionExample {
     private static final String ACCESS_KEY_ID = "<AccessKeyId>";
     private static final String ACCESS_KEY_SECRET = "<AccessKeySecret>";
@@ -77,34 +92,34 @@ public class BasicEncryptionExample {
     }
 
     public static void main(String[] args) {
-        //1.创建访问aliyun配置
+        // 1. Configure parameters to access Alibaba Cloud.
         AliyunConfig config = new AliyunConfig();
         config.withAccessKey(ACCESS_KEY_ID, ACCESS_KEY_SECRET);
 
-        //2.创建SDK，传入访问aliyun配置
+        // 2. Create an SDK object and specify the parameters that are used to access Alibaba Cloud.
         AliyunCrypto aliyunSDK = new AliyunCrypto(config);
-        //设置缓存ckm（可设置，默认为DefaultCryptoKeyManager）
+        // Set cache CryptoKeyManager. This parameter is optional. If you do not specify this parameter, DefaultCryptoKeyManager is used.
         //aliyunSDK.setCryptoKeyManager(new CachingCryptoKeyManager(new LocalDataKeyMaterialCache()));
 
-        //3.创建provider，用于提供数据密钥或签名
+        // 3. Create a data key provider for your data key or signature.
         BaseDataKeyProvider provider = new DefaultDataKeyProvider(CMK_ARN);
-        //设置不同的算法（可设置，默认为AES_GCM_NOPADDING_256）
+        // Configure the algorithm. This parameter is optional. If you do not specify this parameter, AES_GCM_NOPADDING_256 is used.
         //provider.setAlgorithm(CryptoAlgorithm.SM4_GCM_NOPADDING_128);
-        //设置多CMK（可设置，默认为单CMK）
+        // Specify multiple CMKs. This parameter is optional. By default, only one CMK is used.
         //provider.setMultiCmkId(CMK_ARN_LIST);
-        //创建不同的provider
+        // Create data key providers.
         //BaseDataKeyProvider provider = new SecretManagerDataKeyProvider(CMK_ID, "dataKeySecretName");
 
-        //4.加密上下文
+        // 4. Specify the encryption context.
         Map<String, String> encryptionContext = new HashMap<>();
         encryptionContext.put("one", "one");
         encryptionContext.put("two", "two");
 
-        //5.调用加密接口
+        // 5. Call the Encrypt operation.
         CryptoResult<byte[]> cipherResult = aliyunSDK.encrypt(provider, PLAIN_TEXT, encryptionContext);
         CryptoResult<byte[]> plainResult = aliyunSDK.decrypt(provider, cipherResult.getResult());
 
         Assert.assertArrayEquals(PLAIN_TEXT, plainResult.getResult());
     }
 }
-```2
+```

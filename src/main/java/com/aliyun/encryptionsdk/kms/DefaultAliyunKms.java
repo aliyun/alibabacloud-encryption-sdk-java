@@ -2,9 +2,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,6 +15,7 @@
 package com.aliyun.encryptionsdk.kms;
 
 import com.aliyun.encryptionsdk.AliyunConfig;
+import com.aliyun.encryptionsdk.AliyunKmsConfig;
 import com.aliyun.encryptionsdk.exception.AliyunException;
 import com.aliyun.encryptionsdk.logger.CommonLogger;
 import com.aliyun.encryptionsdk.model.*;
@@ -48,10 +49,11 @@ public class DefaultAliyunKms implements AliyunKms {
     public GenerateDataKeyResult generateDataKey(CmkId keyId, CryptoAlgorithm algorithm, Map<String, String> context) {
         GenerateDataKeyRequest request = new GenerateDataKeyRequest();
         request.setKeyId(keyId.getRawKeyId());
-        if(algorithm.getKeySpec().equals("SM4_128"))
-                request.setNumberOfBytes(16);
-        else
-                request.setKeySpec(algorithm.getKeySpec());
+        if (algorithm.getKeySpec().equals("SM4_128")) {
+            request.setNumberOfBytes(16);
+        } else {
+            request.setKeySpec(algorithm.getKeySpec());
+        }
         request.setKeySpec(algorithm.getKeySpec());
         Gson gson = new Gson();
         request.setEncryptionContext(context.isEmpty() ? null : gson.toJson(context));
@@ -130,6 +132,7 @@ public class DefaultAliyunKms implements AliyunKms {
         request.setSecretName(secretName);
         request.setSecretData(secretData);
         request.setSecretDataType(secretDataType);
+        request.setDKMSInstanceId(keyId.getInstanceId());
         CreateSecretResponse response = getResult(CreateSecretResponse.class, request, keyId);
         return new CreateSecretResult(response.getArn(), response.getSecretName(), response.getVersionId());
     }
@@ -165,8 +168,11 @@ public class DefaultAliyunKms implements AliyunKms {
         if (StringUtils.isEmpty(keyId.getRegion())) {
             throw new AliyunException("region information not obtained");
         }
-        IAcsClient client = AliyunKmsClientFactory.getClient(config, keyId.getRegion());
-
+        IAcsClient client = null;
+        if (config instanceof AliyunKmsConfig) {
+            client = AliyunKmsClientFactory.getDKmsClient((AliyunKmsConfig) config, keyId);
+        }
+        client = client == null ? AliyunKmsClientFactory.getClient(config, keyId.getRegion()) : client;
         int maxRetries = config.getMaxRetries();
         if (maxRetries <= 0) {
             maxRetries = 1;

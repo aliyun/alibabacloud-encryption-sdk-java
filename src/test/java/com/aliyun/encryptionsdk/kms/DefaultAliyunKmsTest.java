@@ -14,15 +14,21 @@
 
 package com.aliyun.encryptionsdk.kms;
 
-import com.aliyun.encryptionsdk.AliyunCrypto;
+import com.aliyun.dkms.gcs.openapi.models.Config;
 import com.aliyun.encryptionsdk.AliyunConfig;
+import com.aliyun.encryptionsdk.AliyunKmsConfig;
+import com.aliyun.encryptionsdk.logger.CommonLogger;
 import com.aliyun.encryptionsdk.model.*;
 import com.aliyun.encryptionsdk.TestAccount;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.LoggerFactory;
 
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.Base64;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -40,17 +46,30 @@ public class DefaultAliyunKmsTest {
     private static CryptoAlgorithm algorithm;
     private static Map<String, String> encryptionContext;
     private static AliyunConfig config;
+    private AliyunKmsConfig aliyunKmsConfig;
     private static DefaultAliyunKms aliyunKms;
     @Before
     public void setUp(){
+        CommonLogger.registerLogger(Constants.MODE_NAME, LoggerFactory.getLogger(Constants.MODE_NAME));
         encryptionContext = new HashMap<>();
         encryptionContext.put("default", "context");
         encryptionContext.put("simple", "test");
         encryptionContext.put("aliyun", "kms");
-
-        config = TestAccount.AliyunKMS.getAliyunConfig();
-        aliyunKms = new DefaultAliyunKms(config);
-        AliyunCrypto crypto = new AliyunCrypto(config);
+        InputStream stream = TestAccount.class.getResourceAsStream("/fixture/dkmsConfig.json");
+        Map<String, String> result = new Gson().fromJson(new InputStreamReader(stream), new TypeToken<Map<String, String>>() {}.getType());
+        this.aliyunKmsConfig = new AliyunKmsConfig();
+        this.aliyunKmsConfig.withAccessKey(result.get("accessKeyId"),result.get("accessKeySecret"));
+        Config config = new Config();
+        config.setRegionId(result.get("regionId"));
+        config.setClientKeyFile(result.get("clientKeyFile"));
+        config.setPassword(result.get("password"));
+        config.setEndpoint(result.get("endpoint"));
+        config.setProtocol(result.get("protocol"));
+        this.aliyunKmsConfig.addDkmsConfig(new DkmsConfig(config,true));
+//        this.aliyunCrypto = new AliyunCrypto(aliyunDkmsConfig);
+//        config = TestAccount.AliyunKMS.getAliyunConfig();
+        aliyunKms = new DefaultAliyunKms(this.aliyunKmsConfig);
+//        AliyunCrypto crypto = new AliyunCrypto(config);
     }
 
     @Test

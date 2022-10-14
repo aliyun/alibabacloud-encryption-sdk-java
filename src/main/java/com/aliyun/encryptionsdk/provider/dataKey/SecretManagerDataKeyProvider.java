@@ -2,9 +2,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -57,7 +57,7 @@ public class SecretManagerDataKeyProvider extends AbstractExternalStoreDataKeyPr
             storeCipherHeader(dataKeyName, cipherHeader);
         } catch (Exception e) {
             if (e.getCause() instanceof ClientException) {
-                ClientException exception = (ClientException)e.getCause();
+                ClientException exception = (ClientException) e.getCause();
                 if ("Rejected.ResourceExist".equals(exception.getErrCode())) {
                     //若因为secretName已经存在的问题报错，则直接重新查询secretValue，可能有其他线程或分布式机器已经创建该secret了
                     cipherHeader = getCipherHeader(dataKeyName);
@@ -88,8 +88,8 @@ public class SecretManagerDataKeyProvider extends AbstractExternalStoreDataKeyPr
         } catch (Exception e) {
             //判断不同的异常做不同处理，若没有对应的Secret则返回null
             if (e.getCause() instanceof ClientException) {
-                ClientException exception = (ClientException)e.getCause();
-                if ("Forbidden.ResourceNotFound".equals(exception.getErrCode())) {
+                ClientException exception = (ClientException) e.getCause();
+                if ("Forbidden.ResourceNotFound".equals(exception.getErrCode()) || "Forbidden.KeyNotFound".equals(exception.getErrCode())) {
                     return null;
                 }
             }

@@ -2,9 +2,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,6 +15,10 @@
 package com.aliyun.encryptionsdk.model;
 
 import com.aliyun.encryptionsdk.exception.InvalidArgumentException;
+import com.aliyuncs.IAcsClient;
+import com.aliyuncs.exceptions.ClientException;
+import com.aliyuncs.kms.model.v20160120.DescribeKeyRequest;
+import com.aliyuncs.kms.model.v20160120.DescribeKeyResponse;
 import com.aliyuncs.utils.StringUtils;
 
 import java.util.Objects;
@@ -26,6 +30,13 @@ public class CmkId {
     private String region;
     private String rawKeyId;
     private boolean isArn = false;
+    private String instanceId;
+    /**
+     * kms类型
+     * 0 共享kms
+     * 1 专属kms
+     */
+    private Integer kmsType;
 
     public CmkId(String keyId) {
         if (StringUtils.isEmpty(keyId)) {
@@ -37,9 +48,14 @@ public class CmkId {
         }
         //TODO:如果keyId不是arn，是cmk或alias的时候需要指定region id，二期考虑是否支持
         //else {
-            //this.rawKeyId = keyId;
-            //this.region = regionId;
+        //this.rawKeyId = keyId;
+        //this.region = regionId;
         //}
+    }
+
+    public CmkId(String keyId, String instanceId) {
+        this(keyId);
+        this.instanceId = instanceId;
     }
 
     public String getKeyId() {
@@ -50,12 +66,27 @@ public class CmkId {
         return region;
     }
 
-    public String getRawKeyId(){
+    public String getRawKeyId() {
         return rawKeyId;
     }
 
     public boolean isArn() {
         return isArn;
+    }
+
+    public String getInstanceId() {
+        return instanceId;
+    }
+
+    public void setInstanceId(String instanceId) {
+        this.instanceId = instanceId;
+        if (!StringUtils.isEmpty(instanceId)) {
+            this.kmsType = Constants.KMS_TYPE_DKMS;
+        }
+    }
+
+    public Integer getKmsType() {
+        return kmsType;
     }
 
     private void parsingKeyId(String keyId) {
@@ -93,6 +124,23 @@ public class CmkId {
             return region.equalsIgnoreCase(cmkId.getRegion());
         }
         return false;
+    }
+
+    public void refreshMetadata(IAcsClient client) {
+        try {
+            DescribeKeyRequest request = new DescribeKeyRequest();
+            request.setKeyId(rawKeyId);
+            DescribeKeyResponse response = client.getAcsResponse(request);
+            DescribeKeyResponse.KeyMetadata keyMetadata = response.getKeyMetadata();
+            if (keyMetadata != null && keyMetadata.getDKMSInstanceId() != null) {
+                this.setInstanceId(keyMetadata.getDKMSInstanceId());
+                this.kmsType = Constants.KMS_TYPE_DKMS;
+                return;
+            }
+        } catch (ClientException e) {
+            throw new RuntimeException(e);
+        }
+        this.kmsType = Constants.KMS_TYPE_KMS;
     }
 
     @Override

@@ -1,0 +1,9 @@
+{
+  "accessKeyId": "accessKeyId",
+  "accessKeySecret": "accessKeySecret",
+  "protocol": "https",
+  "regionId": "regionId",
+  "endpoint": "endpoint",
+  "clientKeyFile": "clientKeyFile",
+  "password": "password"
+}

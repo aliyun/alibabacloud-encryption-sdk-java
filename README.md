@@ -77,7 +77,7 @@ $ mvn package -DskipTests
 ```
 
 ### Code example
-
+#### 1. kms example
 ```java
 public class BasicEncryptionExample {
     private static final String ACCESS_KEY_ID = "<AccessKeyId>";
@@ -92,10 +92,77 @@ public class BasicEncryptionExample {
     }
 
     public static void main(String[] args) {
-        // 1. Configure parameters to access Alibaba Cloud.
+        // 1. Configure parameters to access kms.
         AliyunConfig config = new AliyunConfig();
         config.withAccessKey(ACCESS_KEY_ID, ACCESS_KEY_SECRET);
 
+        // 2. Create an SDK object and specify the parameters that are used to access Alibaba Cloud.
+        AliyunCrypto aliyunSDK = new AliyunCrypto(config);
+        // Set cache CryptoKeyManager. This parameter is optional. If you do not specify this parameter, DefaultCryptoKeyManager is used.
+        //aliyunSDK.setCryptoKeyManager(new CachingCryptoKeyManager(new LocalDataKeyMaterialCache()));
+
+        // 3. Create a data key provider for your data key or signature.
+        BaseDataKeyProvider provider = new DefaultDataKeyProvider(CMK_ARN);
+        // Configure the algorithm. This parameter is optional. If you do not specify this parameter, AES_GCM_NOPADDING_256 is used.
+        //provider.setAlgorithm(CryptoAlgorithm.SM4_GCM_NOPADDING_128);
+        // Specify multiple CMKs. This parameter is optional. By default, only one CMK is used.
+        //provider.setMultiCmkId(CMK_ARN_LIST);
+        // Create data key providers.
+        //BaseDataKeyProvider provider = new SecretManagerDataKeyProvider(CMK_ID, "dataKeySecretName");
+
+        // 4. Specify the encryption context.
+        Map<String, String> encryptionContext = new HashMap<>();
+        encryptionContext.put("one", "one");
+        encryptionContext.put("two", "two");
+
+        // 5. Call the Encrypt operation.
+        CryptoResult<byte[]> cipherResult = aliyunSDK.encrypt(provider, PLAIN_TEXT, encryptionContext);
+        CryptoResult<byte[]> plainResult = aliyunSDK.decrypt(provider, cipherResult.getResult());
+
+        Assert.assertArrayEquals(PLAIN_TEXT, plainResult.getResult());
+    }
+}
+```
+#### 2. dkms example
+```java
+import com.aliyun.dkms.gcs.openapi.models.Config;
+import com.aliyun.encryptionsdk.model.CryptoResult;
+import com.aliyun.encryptionsdk.model.DkmsConfig;
+import com.aliyun.encryptionsdk.provider.BaseDataKeyProvider;
+import com.aliyun.encryptionsdk.provider.dataKey.DefaultDataKeyProvider;
+import org.junit.Assert;
+
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class BasicEncryptionExample {
+    private static final String ACCESS_KEY_ID = "<AccessKeyId>";
+    private static final String ACCESS_KEY_SECRET = "<AccessKeySecret>";
+    private static final String CMK_ARN = "acs:kms:RegionId:UserId:key/CmkId";
+    private static final byte[] PLAIN_TEXT = "Hello World".getBytes(StandardCharsets.UTF_8);
+    private static final List<String> CMK_ARN_LIST;
+
+    static {
+        CMK_ARN_LIST = new ArrayList<>();
+        CMK_ARN_LIST.add("cmk1");
+        CMK_ARN_LIST.add("cmk2");
+    }
+
+    public static void main(String[] args) {
+        // 1. Configure parameters to access dkms.
+        AliyunKmsConfig config = new AliyunKmsConfig();
+        config.withAccessKey(ACCESS_KEY_ID, ACCESS_KEY_SECRET);
+        config.addDkmsConfig(new DkmsConfig(
+                                new Config()
+                                .setRegionId("<RegionId>")
+                                .setClientKeyFile("<ClientKeyFile>")
+                                .setPassword("<Password>")
+                                .setEndpoint("<Endpoint>")
+                                .setProtocol("<Protocol>")
+                            , false));
         // 2. Create an SDK object and specify the parameters that are used to access Alibaba Cloud.
         AliyunCrypto aliyunSDK = new AliyunCrypto(config);
         // Set cache CryptoKeyManager. This parameter is optional. If you do not specify this parameter, DefaultCryptoKeyManager is used.

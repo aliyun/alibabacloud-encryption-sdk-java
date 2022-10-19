@@ -2,9 +2,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,6 +20,7 @@ import com.aliyun.encryptionsdk.kms.AliyunKms;
 import com.aliyun.encryptionsdk.logger.CommonLogger;
 import com.aliyun.encryptionsdk.model.*;
 import com.aliyun.encryptionsdk.provider.dataKey.AbstractExternalStoreDataKeyProvider;
+
 import javax.crypto.spec.SecretKeySpec;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -41,8 +42,16 @@ public abstract class BaseDataKeyProvider {
         this(keyId, CryptoAlgorithm.AES_GCM_NOPADDING_256);
     }
 
+    public BaseDataKeyProvider(String keyId, String instanceId) {
+        this(keyId, instanceId, CryptoAlgorithm.AES_GCM_NOPADDING_256);
+    }
+
     public BaseDataKeyProvider(String keyId, CryptoAlgorithm algorithm) {
-        this.keyId = new CmkId(keyId);
+        this(keyId, null, algorithm);
+    }
+
+    public BaseDataKeyProvider(String keyId, String instanceId, CryptoAlgorithm algorithm) {
+        this.keyId = new CmkId(keyId, instanceId);
         this.algorithm = algorithm;
         this.handler = new Asn1FormatHandler();
     }
@@ -78,6 +87,7 @@ public abstract class BaseDataKeyProvider {
 
     /**
      * 生成一个数据密钥并进行加密处理
+     *
      * @param material 加密密钥材料（不包含获取数据密钥）
      * @return 加密密钥材料
      */
@@ -85,8 +95,10 @@ public abstract class BaseDataKeyProvider {
         EncryptionMaterial newMaterial = generateDataKey(material);
 
         EncryptedDataKey dataKey = newMaterial.getEncryptedDataKeys().get(0);
-        for (CmkId key: keyIds) {
-            if (keyId.isCommonRegion(key)) {
+        for (CmkId key : keyIds) {
+            if (keyId.isCommonRegion(key)
+                    && (keyId.getInstanceId() == null) || (keyId.getKmsType() != null && Constants.KMS_TYPE_KMS == keyId.getKmsType())
+                    && (key.getInstanceId() == null) || (key.getKmsType() != null && Constants.KMS_TYPE_KMS == key.getKmsType())) {
                 //同region的CMK使用密文进行转加密
                 newMaterial = reEncryptDataKey(key, dataKey, newMaterial);
             } else {
@@ -98,7 +110,8 @@ public abstract class BaseDataKeyProvider {
 
     /**
      * 解密数据密钥
-     * @param material 解密密钥材料（不包含数据密钥明文）
+     *
+     * @param material          解密密钥材料（不包含数据密钥明文）
      * @param encryptedDataKeys 数据密钥明文列表
      * @return 加密密钥材料
      */
@@ -108,7 +121,7 @@ public abstract class BaseDataKeyProvider {
             keyIdList.add(keyId);
         }
 
-        for (EncryptedDataKey encryptedDataKey: encryptedDataKeys) {
+        for (EncryptedDataKey encryptedDataKey : encryptedDataKeys) {
             if (keyIdList.contains(new CmkId(encryptedDataKey.getKeyIdString()))) {
                 try {
                     return decryptDataKey(material, encryptedDataKey);
@@ -122,6 +135,7 @@ public abstract class BaseDataKeyProvider {
 
     /**
      * 通过密文或数据密钥关键字获取数据密钥并生成密码材料
+     *
      * @param cipherText 密文
      * @return 密码材料
      */
@@ -135,6 +149,7 @@ public abstract class BaseDataKeyProvider {
      * 1.{@link CipherMaterial} 的所有内容
      * 2.{@link CipherMaterial} 中的 {@link CipherBody} 部分（{@link CipherHeader} 部分由
      * {@link AbstractExternalStoreDataKeyProvider} 的实现自行处理）
+     *
      * @param cipherMaterial 密码材料
      * @return 加密结果
      */

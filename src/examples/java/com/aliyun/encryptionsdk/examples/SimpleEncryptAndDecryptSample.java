@@ -39,8 +39,8 @@ public class SimpleEncryptAndDecryptSample {
     // 明文
     private static final byte[] PLAIN_TEXT = "this is test.".getBytes(StandardCharsets.UTF_8);
     // accessKeyId accessKeySecret
-    private static final String ACCESS_KEY_ID = "<AccessKeyId>";
-    private static final String ACCESS_KEY_SECRET = "<AccessKeySecret>";
+    private static final String ACCESS_KEY_ID = System.getenv("<AccessKeyId>");
+    private static final String ACCESS_KEY_SECRET = System.getenv("<AccessKeySecret>");
     // 日志系统
     private static final Logger LOGGER = LoggerFactory.getLogger(SimpleEncryptAndDecryptSample.class);
     // cmkId

@@ -34,8 +34,8 @@ import static org.junit.Assert.assertArrayEquals;
  */
 public class SecretManagerProviderSample {
     // accessKeyId accessKeySecret
-    private static final String ACCESS_KEY_ID = "<AccessKeyId>";
-    private static final String ACCESS_KEY_SECRET = "<AccessKeySecret>";
+    private static final String ACCESS_KEY_ID = System.getenv("<AccessKeyId>");
+    private static final String ACCESS_KEY_SECRET = System.getenv("<AccessKeySecret>");
     // cmkId
     private static final String CMK = "acs:kms:RegionId:UserId:key/CmkId";
     private static final byte[] PLAIN_TEXT = "this is test.".getBytes(StandardCharsets.UTF_8);

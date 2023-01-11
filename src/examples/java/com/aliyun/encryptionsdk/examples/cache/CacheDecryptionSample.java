@@ -30,8 +30,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class CacheDecryptionSample {
-    private static final String ACCESS_KEY_ID = "<AccessKeyId>";
-    private static final String ACCESS_KEY_SECRET = "<AccessKeySecret>";
+    private static final String ACCESS_KEY_ID = System.getenv("<AccessKeyId>");
+    private static final String ACCESS_KEY_SECRET = System.getenv("<AccessKeySecret>");
     private static final String KEY_ID = "acs:kms:cn-beijing:userId:key/keyId";
     private static final byte[] PLAIN_TEXT = "Hello World".getBytes(StandardCharsets.UTF_8);
 

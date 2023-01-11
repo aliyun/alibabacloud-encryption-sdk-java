@@ -32,8 +32,8 @@ public class OriginalMessageSignatureVerifySample {
     private static final String KEY_ID = "acs:kms:RegionId:UserId:key/CmkId";
     private static final String KEY_VERSION_ID = "keyVersionId";
     // accessKeyId accessKeySecret
-    private static final String ACCESS_KEY_ID = "<AccessKeyId>";
-    private static final String ACCESS_KEY_SECRET = "<AccessKeySecret>";
+    private static final String ACCESS_KEY_ID = System.getenv("<AccessKeyId>");
+    private static final String ACCESS_KEY_SECRET = System.getenv("<AccessKeySecret>");
 
     public static void main(String[] args) {
         byte[] msg = "this is test.".getBytes();

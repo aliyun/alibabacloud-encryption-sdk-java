@@ -37,8 +37,8 @@ import static org.junit.Assert.assertEquals;
  * 缓存ckm使用示例
  */
 public class CacheEncryptionSample {
-    private static final String ACCESS_KEY_ID = "<AccessKeyId>";
-    private static final String ACCESS_KEY_SECRET = "<AccessKeySecret>";
+    private static final String ACCESS_KEY_ID = System.getenv("<AccessKeyId>");
+    private static final String ACCESS_KEY_SECRET = System.getenv("<AccessKeySecret>");
     private static final String KEY_ID = "acs:kms:RegionId:UserId:key/CmkId";
     private static final byte[] PLAIN_TEXT = "Hello World".getBytes(StandardCharsets.UTF_8);
 

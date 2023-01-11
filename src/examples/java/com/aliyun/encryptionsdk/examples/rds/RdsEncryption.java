@@ -29,7 +29,7 @@ public class RdsEncryption {
     private static final AliyunCrypto SDK;
     static {
         AliyunConfig config = new AliyunConfig();
-        config.withAccessKey("<AccessKeyId>", "<AccessKeySecret>");
+        config.withAccessKey(System.getenv("<AccessKeyId>"), System.getenv("<AccessKeySecret>"));
         SDK = new AliyunCrypto(config);
     }
 

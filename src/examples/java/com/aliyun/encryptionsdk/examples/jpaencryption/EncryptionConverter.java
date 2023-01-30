@@ -29,8 +29,8 @@ import java.util.Collections;
 
 @Converter
 public class EncryptionConverter implements AttributeConverter<String, String> {
-    private static String ACCESS_KEY_ID = "<AccessKeyId>";
-    private static String ACCESS_KEY_SECRET = "<AccessKeySecret>";
+    private static String ACCESS_KEY_ID = System.getenv("<AccessKeyId>");
+    private static String ACCESS_KEY_SECRET = System.getenv("<AccessKeySecret>");
     private static String CMK_ARN = "acs:kms:RegionId:UserId:key/CmkId";
     private static AliyunConfig config;
     static {

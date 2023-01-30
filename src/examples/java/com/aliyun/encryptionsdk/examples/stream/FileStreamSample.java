@@ -36,8 +36,8 @@ import java.util.Map;
 public class FileStreamSample {
     private static final String FILE = "README.md";
     // accessKeyId accessKeySecret
-    private static final String ACCESS_KEY_ID = "<AccessKeyId>";
-    private static final String ACCESS_KEY_SECRET = "<AccessKeySecret>";
+    private static final String ACCESS_KEY_ID = System.getenv("<AccessKeyId>");
+    private static final String ACCESS_KEY_SECRET = System.getenv("<AccessKeySecret>");
     // 日志系统
     private static final Logger LOGGER = LoggerFactory.getLogger(FileStreamSample.class);
     // cmkId

@@ -14,8 +14,8 @@ import java.util.List;
 import java.util.Map;
 
 public class BasicEncryptionTest {
-    private static final String ACCESS_KEY_ID = "<AccessKeyId>";
-    private static final String ACCESS_KEY_SECRET = "<AccessKeySecret>";
+    private static final String ACCESS_KEY_ID = System.getenv("<AccessKeyId>");
+    private static final String ACCESS_KEY_SECRET = System.getenv("<AccessKeySecret>");
     private static final String CMK_ARN = "acs:kms:RegionId:UserId:key/CmkId";
     private static final byte[] PLAIN_TEXT = "Hello World".getBytes(StandardCharsets.UTF_8);
     private static final List<String> CMK_ARN_LIST;

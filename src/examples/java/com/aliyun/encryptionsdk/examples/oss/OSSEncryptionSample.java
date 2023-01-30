@@ -54,8 +54,8 @@ import java.util.*;
  */
 public class OSSEncryptionSample {
     private static final String ENDPOINT = "oss-cn-hangzhou.aliyuncs.com";
-    private static final String ACCESS_KEY_ID = "<AccessKeyId>";
-    private static final String ACCESS_KEY_SECRET = "<AccessKeySecret>";
+    private static final String ACCESS_KEY_ID = System.getenv("<AccessKeyId>");
+    private static final String ACCESS_KEY_SECRET = System.getenv("<AccessKeySecret>");
 
     private static final String BUCKET_NAME = "<BucketName>";
     private static final String CONTENT = "jdjfhdus6182042795hlnf12s8yhfs976y2nfoshhnsdfsf235bvsmnhtskbcfd!";

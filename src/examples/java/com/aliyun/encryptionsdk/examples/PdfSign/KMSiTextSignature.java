@@ -39,9 +39,9 @@ public class KMSiTextSignature implements IExternalSignature {
     // change with your regionId
     public static final String REGION_ID = "cn-hangzhou";
     // your AccessKeyId
-    public static final String ACCESS_KEY_ID = "<AccessKeyId>";
+    public static final String ACCESS_KEY_ID = System.getenv("<AccessKeyId>");
     // your AccessKeySecret
-    public static final String ACCESS_KEY_SECRET = "<AccessKeySecret>";
+    public static final String ACCESS_KEY_SECRET = System.getenv("<AccessKeySecret>");
     private static AliyunCrypto aliyunCrypto;
 
     static {

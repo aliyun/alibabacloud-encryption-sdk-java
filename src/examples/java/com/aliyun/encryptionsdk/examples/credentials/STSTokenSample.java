@@ -38,8 +38,8 @@ import static org.junit.Assert.assertArrayEquals;
 public class STSTokenSample {
     private static final String PLAIN_TEXT = "this is test.";
     private static final String KEY_ID = "acs:kms:RegionId:UserId:key/CmkId";
-    private static final String ACCESS_KEY_ID = "<AccessKeyId>";
-    private static final String ACCESS_KEY_SECRET = "<AccessKeySecret>";
+    private static final String ACCESS_KEY_ID = System.getenv("<AccessKeyId>");
+    private static final String ACCESS_KEY_SECRET = System.getenv("<AccessKeySecret>");
     private static final String REGION_ID = "cn-hangzhou";
 
     public static void main(String[] args) throws ClientException {
